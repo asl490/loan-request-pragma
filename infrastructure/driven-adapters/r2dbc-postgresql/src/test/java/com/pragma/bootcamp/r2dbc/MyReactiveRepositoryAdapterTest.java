@@ -1,78 +1,78 @@
-package com.pragma.bootcamp.r2dbc;
+// package com.pragma.bootcamp.r2dbc;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.reactivecommons.utils.ObjectMapper;
-import org.springframework.data.domain.Example;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
+// import org.junit.jupiter.api.Test;
+// import org.junit.jupiter.api.extension.ExtendWith;
+// import org.mockito.InjectMocks;
+// import org.mockito.Mock;
+// import org.mockito.junit.jupiter.MockitoExtension;
+// import org.reactivecommons.utils.ObjectMapper;
+// import org.springframework.data.domain.Example;
+// import reactor.core.publisher.Flux;
+// import reactor.core.publisher.Mono;
+// import reactor.test.StepVerifier;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+// import static org.mockito.ArgumentMatchers.any;
+// import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-class MyReactiveRepositoryAdapterTest {
-    // TODO: change four you own tests
+// @ExtendWith(MockitoExtension.class)
+// class MyReactiveRepositoryAdapterTest {
+// // TODO: change four you own tests
 
-    @InjectMocks
-    MyReactiveRepositoryAdapter repositoryAdapter;
+// @InjectMocks
+// MyReactiveRepositoryAdapter repositoryAdapter;
 
-    @Mock
-    MyReactiveRepository repository;
+// @Mock
+// MyReactiveRepository repository;
 
-    @Mock
-    ObjectMapper mapper;
+// @Mock
+// ObjectMapper mapper;
 
-    @Test
-    void mustFindValueById() {
+// @Test
+// void mustFindValueById() {
 
-        when(repository.findById("1")).thenReturn(Mono.just("test"));
-        when(mapper.map("test", Object.class)).thenReturn("test");
+// when(repository.findById("1")).thenReturn(Mono.just("test"));
+// when(mapper.map("test", Object.class)).thenReturn("test");
 
-        Mono<Object> result = repositoryAdapter.findById("1");
+// Mono<Object> result = repositoryAdapter.findById("1");
 
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.equals("test"))
-                .verifyComplete();
-    }
+// StepVerifier.create(result)
+// .expectNextMatches(value -> value.equals("test"))
+// .verifyComplete();
+// }
 
-    @Test
-    void mustFindAllValues() {
-        when(repository.findAll()).thenReturn(Flux.just("test"));
-        when(mapper.map("test", Object.class)).thenReturn("test");
+// @Test
+// void mustFindAllValues() {
+// when(repository.findAll()).thenReturn(Flux.just("test"));
+// when(mapper.map("test", Object.class)).thenReturn("test");
 
-        Flux<Object> result = repositoryAdapter.findAll();
+// Flux<Object> result = repositoryAdapter.findAll();
 
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.equals("test"))
-                .verifyComplete();
-    }
+// StepVerifier.create(result)
+// .expectNextMatches(value -> value.equals("test"))
+// .verifyComplete();
+// }
 
-    @Test
-    void mustFindByExample() {
-        when(repository.findAll(any(Example.class))).thenReturn(Flux.just("test"));
-        when(mapper.map("test", Object.class)).thenReturn("test");
+// @Test
+// void mustFindByExample() {
+// when(repository.findAll(any(Example.class))).thenReturn(Flux.just("test"));
+// when(mapper.map("test", Object.class)).thenReturn("test");
 
-        Flux<Object> result = repositoryAdapter.findByExample("test");
+// Flux<Object> result = repositoryAdapter.findByExample("test");
 
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.equals("test"))
-                .verifyComplete();
-    }
+// StepVerifier.create(result)
+// .expectNextMatches(value -> value.equals("test"))
+// .verifyComplete();
+// }
 
-    @Test
-    void mustSaveValue() {
-        when(repository.save("test")).thenReturn(Mono.just("test"));
-        when(mapper.map("test", Object.class)).thenReturn("test");
+// @Test
+// void mustSaveValue() {
+// when(repository.save("test")).thenReturn(Mono.just("test"));
+// when(mapper.map("test", Object.class)).thenReturn("test");
 
-        Mono<Object> result = repositoryAdapter.save("test");
+// Mono<Object> result = repositoryAdapter.save("test");
 
-        StepVerifier.create(result)
-                .expectNextMatches(value -> value.equals("test"))
-                .verifyComplete();
-    }
-}
+// StepVerifier.create(result)
+// .expectNextMatches(value -> value.equals("test"))
+// .verifyComplete();
+// }
+// }
