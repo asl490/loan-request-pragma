@@ -6,7 +6,7 @@ dependencies {
     implementation 'org.postgresql:r2dbc-postgresql'
     implementation 'io.asyncer:r2dbc-mysql:1.4.1'
     implementation 'org.reactivecommons.utils:object-mapper-api:0.1.0'
-
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
     testImplementation 'org.reactivecommons.utils:object-mapper:0.1.0'
 }
 
