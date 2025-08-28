@@ -9,7 +9,7 @@ public interface RequestLoanRepository {
 
     Flux<RequestLoan> getAll();
 
-    Mono<RequestLoan> update(RequestLoan requestLoanRequestLoanUpdate);
+//    Mono<RequestLoan> update(RequestLoan requestLoanRequestLoanUpdate);
 
     Mono<Void> delete(Long idRequestLoan);
 

@@ -1,78 +1,107 @@
-// package com.pragma.bootcamp.r2dbc;
+package com.pragma.bootcamp.r2dbc;
 
-// import org.junit.jupiter.api.Test;
-// import org.junit.jupiter.api.extension.ExtendWith;
-// import org.mockito.InjectMocks;
-// import org.mockito.Mock;
-// import org.mockito.junit.jupiter.MockitoExtension;
-// import org.reactivecommons.utils.ObjectMapper;
-// import org.springframework.data.domain.Example;
-// import reactor.core.publisher.Flux;
-// import reactor.core.publisher.Mono;
-// import reactor.test.StepVerifier;
+import com.pragma.bootcamp.model.requestloan.RequestLoan;
+import com.pragma.bootcamp.r2dbc.adapter.RequestLoanReactiveRepository;
+import com.pragma.bootcamp.r2dbc.adapter.RequestLoanReactiveRepositoryAdapter;
+import com.pragma.bootcamp.r2dbc.entity.RequestLoanEntity;
+import com.pragma.bootcamp.r2dbc.mapper.RequestLoanMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.reactivecommons.utils.ObjectMapper;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
-// import static org.mockito.ArgumentMatchers.any;
-// import static org.mockito.Mockito.when;
+import java.math.BigDecimal;
+import java.util.Optional;
 
-// @ExtendWith(MockitoExtension.class)
-// class MyReactiveRepositoryAdapterTest {
-// // TODO: change four you own tests
+import static org.mockito.Mockito.*;
 
-// @InjectMocks
-// MyReactiveRepositoryAdapter repositoryAdapter;
+class RequestLoanReactiveRepositoryAdapterTest {
 
-// @Mock
-// MyReactiveRepository repository;
+    private RequestLoanReactiveRepository repository;
+    private ObjectMapper objectMapper;
+    private RequestLoanMapper mapper;
 
-// @Mock
-// ObjectMapper mapper;
+    private RequestLoanReactiveRepositoryAdapter adapter;
 
-// @Test
-// void mustFindValueById() {
+    @BeforeEach
+    void setUp() {
+        repository = mock(RequestLoanReactiveRepository.class);
+        objectMapper = mock(ObjectMapper.class);
+        mapper = mock(RequestLoanMapper.class);
 
-// when(repository.findById("1")).thenReturn(Mono.just("test"));
-// when(mapper.map("test", Object.class)).thenReturn("test");
+        adapter = new RequestLoanReactiveRepositoryAdapter(repository, objectMapper, mapper);
+    }
 
-// Mono<Object> result = repositoryAdapter.findById("1");
+    @Test
+    void shouldCreateLoanSuccessfully() {
+        // Arrange
+        RequestLoan requestLoan = RequestLoan.builder()
+                .id(null)
+                .dni("12345678")
+                .amount(BigDecimal.valueOf(5000))
+                .build();
 
-// StepVerifier.create(result)
-// .expectNextMatches(value -> value.equals("test"))
-// .verifyComplete();
-// }
+        RequestLoanEntity entityToSave = RequestLoanEntity.builder()
+                .dni("12345678")
+                .amount(BigDecimal.valueOf(5000))
+                .build();
 
-// @Test
-// void mustFindAllValues() {
-// when(repository.findAll()).thenReturn(Flux.just("test"));
-// when(mapper.map("test", Object.class)).thenReturn("test");
+        RequestLoanEntity savedEntity = RequestLoanEntity.builder()
+                .id(1L)
+                .dni("12345678")
+                .amount(BigDecimal.valueOf(5000))
+                .build();
 
-// Flux<Object> result = repositoryAdapter.findAll();
+        RequestLoan domainSaved = RequestLoan.builder()
+                .id(1L)
+                .dni("12345678")
+                .amount(BigDecimal.valueOf(5000))
+                .build();
 
-// StepVerifier.create(result)
-// .expectNextMatches(value -> value.equals("test"))
-// .verifyComplete();
-// }
+        when(mapper.toEntity(requestLoan)).thenReturn(entityToSave);
+        when(repository.save(entityToSave)).thenReturn(Mono.just(savedEntity));
+        when(mapper.toDomain(savedEntity)).thenReturn(domainSaved);
 
-// @Test
-// void mustFindByExample() {
-// when(repository.findAll(any(Example.class))).thenReturn(Flux.just("test"));
-// when(mapper.map("test", Object.class)).thenReturn("test");
+        // Act & Assert
+        StepVerifier.create(adapter.createLoan(requestLoan))
+                .expectNextMatches(result ->
+                        result.getId() == 1L &&
+                                result.getDni().equals("12345678") &&
+                                result.getAmount().equals(BigDecimal.valueOf(5000))
+                )
+                .verifyComplete();
+    }
 
-// Flux<Object> result = repositoryAdapter.findByExample("test");
+    @Test
+    void shouldGetAllLoans() {
+        RequestLoanEntity entity1 = RequestLoanEntity.builder().id(1L).dni("111").amount(BigDecimal.valueOf(1000)).build();
+        RequestLoanEntity entity2 = RequestLoanEntity.builder().id(2L).dni("222").amount(BigDecimal.valueOf(2000)).build();
 
-// StepVerifier.create(result)
-// .expectNextMatches(value -> value.equals("test"))
-// .verifyComplete();
-// }
+        RequestLoan domain1 = RequestLoan.builder().id(1L).dni("111").amount(BigDecimal.valueOf(1000)).build();
+        RequestLoan domain2 = RequestLoan.builder().id(2L).dni("222").amount(BigDecimal.valueOf(2000)).build();
 
-// @Test
-// void mustSaveValue() {
-// when(repository.save("test")).thenReturn(Mono.just("test"));
-// when(mapper.map("test", Object.class)).thenReturn("test");
+        when(repository.findAll()).thenReturn(Flux.just(entity1, entity2));
+        when(mapper.toDomain(entity1)).thenReturn(domain1);
+        when(mapper.toDomain(entity2)).thenReturn(domain2);
 
-// Mono<Object> result = repositoryAdapter.save("test");
+        StepVerifier.create(adapter.getAll())
+                .expectNext(domain1)
+                .expectNext(domain2)
+                .verifyComplete();
+    }
 
-// StepVerifier.create(result)
-// .expectNextMatches(value -> value.equals("test"))
-// .verifyComplete();
-// }
-// }
+
+    @Test
+    void shouldDeleteLoanById() {
+        Long id = 99L;
+
+        when(repository.deleteById(id)).thenReturn(Mono.empty());
+
+        StepVerifier.create(adapter.delete(id))
+                .verifyComplete();
+
+        verify(repository).deleteById(id);
+    }
+}

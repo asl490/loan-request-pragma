@@ -31,10 +31,10 @@ public class RequestLoanReactiveRepositoryAdapter extends
         return repository.findAll().map(requestLoanMapper::toDomain);
     }
 
-    @Override
-    public Mono<RequestLoan> update(RequestLoan requestLoanUpdate) {
-        return super.save(requestLoanUpdate);
-    }
+//    @Override
+//    public Mono<RequestLoan> update(RequestLoan requestLoanUpdate) {
+//        return super.save(requestLoanUpdate);
+//    }
 
     @Override
     public Mono<Void> delete(Long idRequestLoan) {
@@ -53,11 +53,4 @@ public class RequestLoanReactiveRepositoryAdapter extends
                         savedRequestLoan.getId()));
     }
 
-    // @Override
-    // public Mono<RequestLoan> create(RequestLoan requestLoan) {
-    // log.trace("Saving new RequestLoan with document: {}",
-    // requestLoan.toString());
-    // return super.save(requestLoan).doOnSuccess(savedUser ->
-    // log.info("Successfully created user with ID: {}", savedUser.getId()));
-    // }
 }
