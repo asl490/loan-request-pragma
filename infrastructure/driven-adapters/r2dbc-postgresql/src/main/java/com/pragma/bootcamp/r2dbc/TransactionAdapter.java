@@ -15,7 +15,7 @@ public class TransactionAdapter implements TransactionalGateway {
     private final TransactionalOperator transactionalOperator;
 
     @Override
-    public <T> Mono<T> executeInTransaction(Mono<T> action) {
-        return transactionalOperator.transactional(action);
+    public <T> Mono<T> doInTransaction(Mono<T> operations) {
+        return transactionalOperator.transactional(operations);
     }
 }

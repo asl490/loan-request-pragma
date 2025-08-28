@@ -6,9 +6,11 @@ import io.r2dbc.postgresql.PostgresqlConnectionConfiguration;
 import io.r2dbc.postgresql.PostgresqlConnectionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.time.Duration;
 
+@Profile("postgres")
 @Configuration
 public class PostgreSQLConnectionPool {
     /* Change these values for your project */

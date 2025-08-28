@@ -28,29 +28,31 @@ public class RequestLoanUseCase {
     private final RequestStatusRepository requestStatusRepository;
 
     public Mono<RequestLoan> createRequestLoan(RequestLoan requestLoan) {
-        return transactionalGateway.executeInTransaction(
+        return transactionalGateway.doInTransaction(
                 clientRepository.getEmailByDni(requestLoan.getDni())
                         .switchIfEmpty(Mono.error(new ClientNotFoundException(requestLoan.getDni())))
-                        .flatMap(email -> loanTypeRepository.findByName(requestLoan.getLoanType().getName())
+                        .flatMap(email -> loanTypeRepository.findById(requestLoan.getLoanType().getId())
                                 .switchIfEmpty(
-                                        Mono.error(new LoanTypeNotFoundException(requestLoan.getLoanType().getName())))
+                                        Mono.error(new LoanTypeNotFoundException("not found")))
                                 .filter(loanType -> isAmountInRange(requestLoan.getAmount(), loanType))
                                 .switchIfEmpty(Mono.error(new LoanAmountOutOfRangeException()))
                                 .flatMap(loanType -> {
                                     requestLoan.setLoanType(loanType);
                                     requestLoan.setEmail(email);
-                                    return requestStatusRepository.findByName(PENDING.getDescription())
+                                    return requestStatusRepository.findById(1L)
                                             .switchIfEmpty(Mono.error(new IllegalStateException(
                                                     "Request status not found: " + PENDING.getDescription())))
                                             .flatMap(requestStatus -> {
                                                 requestLoan.setRequestStatus(requestStatus);
-                                                return loanRepository.create(requestLoan);
+                                                return loanRepository.createLoan(requestLoan);
                                             });
                                 })));
     }
 
     private boolean isAmountInRange(BigDecimal amount, LoanType type) {
-        return amount.compareTo(type.getMinimumAmount()) >= 0 &&
-                amount.compareTo(type.getMaximumAmount()) <= 0;
+        System.out.println("Validating amount: " + amount + " for loan type: " + type.getName() +
+                " (Min: " + type.getMinAmount() + ", Max: " + type.getMaxAmount() + ")");
+        return amount.compareTo(type.getMinAmount()) >= 0 &&
+                amount.compareTo(type.getMaxAmount()) <= 0;
     }
 }

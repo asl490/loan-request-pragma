@@ -2,11 +2,13 @@ package com.pragma.bootcamp.api.config;
 
 import com.pragma.bootcamp.api.Handler;
 import com.pragma.bootcamp.api.RouterRest;
+import com.pragma.bootcamp.usecase.requestloan.RequestLoanUseCase;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 @ContextConfiguration(classes = {RouterRest.class, Handler.class})
@@ -14,13 +16,16 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 @Import({CorsConfig.class, SecurityHeadersConfig.class})
 class ConfigTest {
 
+    @MockitoBean
+    private RequestLoanUseCase requestLoanUseCase;
+
     @Autowired
     private WebTestClient webTestClient;
 
     @Test
     void corsConfigurationShouldAllowOrigins() {
-        webTestClient.get()
-                .uri("/api/usecase/path")
+        webTestClient.post()
+                .uri("/api/request-loan")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().valueEquals("Content-Security-Policy",

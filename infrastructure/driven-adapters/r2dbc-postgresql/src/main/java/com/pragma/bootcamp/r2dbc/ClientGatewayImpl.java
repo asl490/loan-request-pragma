@@ -1,5 +1,7 @@
 package com.pragma.bootcamp.r2dbc;
 
+
+import com.pragma.bootcamp.model.client.Client;
 import org.springframework.stereotype.Component;
 
 import com.pragma.bootcamp.model.client.gateways.ClientRepository;
@@ -18,9 +20,9 @@ public class ClientGatewayImpl implements ClientRepository {
         public Mono<String> getEmailByDni(String dni) {
                 return clientWebClient
                                 .get()
-                                .uri("/api/v1/usuarios/{dni}", dni)
+                                .uri("/api/v1/user/{dni}", dni)
                                 .retrieve()
-                                .bodyToMono(ClientResponse.class)
-                                .map(ClientResponse::getEmail);
+                                .bodyToMono(Client.class)
+                                .map(Client::getEmail);
         }
 }

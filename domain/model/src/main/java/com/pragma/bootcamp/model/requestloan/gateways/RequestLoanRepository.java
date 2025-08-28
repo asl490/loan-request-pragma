@@ -13,5 +13,5 @@ public interface RequestLoanRepository {
 
     Mono<Void> delete(Long idRequestLoan);
 
-    Mono<RequestLoan> create(RequestLoan requestLoanRequestLoan);
+    Mono<RequestLoan> createLoan(RequestLoan requestLoanRequestLoan);
 }

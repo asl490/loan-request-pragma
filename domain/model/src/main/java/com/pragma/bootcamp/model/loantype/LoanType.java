@@ -14,10 +14,11 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class LoanType {
-    private Long idLoanType;
+    private Long id;
     private String name;
-    private BigDecimal minimumAmount;
-    private BigDecimal maximumAmount;
-    private BigDecimal interestRate;
-    private Boolean automaticValidation;
+    private BigDecimal minAmount;
+    private BigDecimal maxAmount;
+    private String currency;
+    private Double interestRate;
+    private Boolean validationAutomatic;
 }
