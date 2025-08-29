@@ -21,8 +21,8 @@ public class ControllerAdvisor {
         public ResponseEntity<ErrorResponse> handleNotFoundException(NotFoundException ex) {
                 return new ResponseEntity<>(
                                 ErrorResponse.builder()
-                                                .httpStatus(HttpStatus.NOT_FOUND.value())
-                                                .code(HttpStatus.NOT_FOUND.name())
+
+                                                .errorCode(HttpStatus.NOT_FOUND.name())
                                                 .message(ex.getMessage())
                                                 .timestamp(LocalDateTime.now())
                                                 .errors(null)
@@ -34,8 +34,8 @@ public class ControllerAdvisor {
         public ResponseEntity<ErrorResponse> handleValidationException(ValidationException ex) {
                 return new ResponseEntity<>(
                                 ErrorResponse.builder()
-                                                .httpStatus(HttpStatus.BAD_REQUEST.value())
-                                                .code(HttpStatus.BAD_REQUEST.name())
+
+                                                .errorCode(HttpStatus.BAD_REQUEST.name())
                                                 .message(ex.getMessage())
                                                 .timestamp(LocalDateTime.now())
                                                 .errors(null)
@@ -47,8 +47,8 @@ public class ControllerAdvisor {
         public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex) {
                 return new ResponseEntity<>(
                                 ErrorResponse.builder()
-                                                .httpStatus(HttpStatus.CONFLICT.value())
-                                                .code(HttpStatus.CONFLICT.name())
+
+                                                .errorCode(HttpStatus.CONFLICT.name())
                                                 .message(ex.getMessage())
                                                 .timestamp(LocalDateTime.now())
                                                 .errors(null)
@@ -60,8 +60,8 @@ public class ControllerAdvisor {
         public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
                 return new ResponseEntity<>(
                                 ErrorResponse.builder()
-                                                .httpStatus(HttpStatus.BAD_REQUEST.value())
-                                                .code(HttpStatus.BAD_REQUEST.name())
+
+                                                .errorCode(HttpStatus.BAD_REQUEST.name())
                                                 .message("Error de integridad de datos: " + getMessage(ex))
                                                 .timestamp(LocalDateTime.now())
                                                 .errors(null)
@@ -73,8 +73,8 @@ public class ControllerAdvisor {
         public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
                 return new ResponseEntity<>(
                                 ErrorResponse.builder()
-                                                .httpStatus(HttpStatus.BAD_REQUEST.value())
-                                                .code(HttpStatus.BAD_REQUEST.name())
+
+                                                .errorCode(HttpStatus.BAD_REQUEST.name())
                                                 .message(ex.getMessage())
                                                 .timestamp(LocalDateTime.now())
                                                 .errors(null)
@@ -86,8 +86,8 @@ public class ControllerAdvisor {
     public ResponseEntity<ErrorResponse> handleLoanTypeNotFoundException(LoanTypeNotFoundException ex) {
         return new ResponseEntity<>(
                 ErrorResponse.builder()
-                        .httpStatus(HttpStatus.BAD_REQUEST.value())
-                        .code(HttpStatus.BAD_REQUEST.name())
+
+                        .errorCode(HttpStatus.BAD_REQUEST.name())
                         .message(ex.getMessage())
                         .timestamp(LocalDateTime.now())
                         .errors(null)
@@ -99,8 +99,8 @@ public class ControllerAdvisor {
     public ResponseEntity<ErrorResponse> handleLoanAmountOutOfRangeException(LoanAmountOutOfRangeException ex) {
         return new ResponseEntity<>(
                 ErrorResponse.builder()
-                        .httpStatus(HttpStatus.BAD_REQUEST.value())
-                        .code(HttpStatus.BAD_REQUEST.name())
+
+                        .errorCode(HttpStatus.BAD_REQUEST.name())
                         .message(ex.getMessage())
                         .timestamp(LocalDateTime.now())
                         .errors(null)
@@ -112,8 +112,8 @@ public class ControllerAdvisor {
         public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
                 return new ResponseEntity<>(
                                 ErrorResponse.builder()
-                                                .httpStatus(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                                                .code(HttpStatus.INTERNAL_SERVER_ERROR.name())
+
+                                                .errorCode(HttpStatus.INTERNAL_SERVER_ERROR.name())
                                                 .message("An unexpected error occurred")
                                                 .timestamp(LocalDateTime.now())
                                                 .errors(null)

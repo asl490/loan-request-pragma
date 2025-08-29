@@ -75,8 +75,8 @@ public class Handler {
 
         log.error("Validation errors: {}", errors);
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .httpStatus(HttpStatus.BAD_REQUEST.value())
-                .code(HttpStatus.BAD_REQUEST.name())
+
+                .errorCode(HttpStatus.BAD_REQUEST.name())
                 .message("Validation failed")
                 .timestamp(LocalDateTime.now())
                 .errors(errors)

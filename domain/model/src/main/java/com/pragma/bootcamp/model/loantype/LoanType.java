@@ -21,4 +21,12 @@ public class LoanType {
     private String currency;
     private Double interestRate;
     private Boolean validationAutomatic;
+
+    public boolean isAmountInRange(BigDecimal amount) {
+        return amount != null &&
+                minAmount != null &&
+                maxAmount != null &&
+                amount.compareTo(minAmount) >= 0 &&
+                amount.compareTo(maxAmount) <= 0;
+    }
 }

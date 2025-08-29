@@ -8,7 +8,6 @@ import com.pragma.bootcamp.utils.gateways.TransactionalGateway;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
-@Component
 @RequiredArgsConstructor
 public class TransactionAdapter implements TransactionalGateway {
 

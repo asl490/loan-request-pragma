@@ -1,5 +1,6 @@
 package com.pragma.bootcamp.r2dbc.adapter;
 
+import com.pragma.bootcamp.utils.gateways.TransactionalGateway;
 import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.stereotype.Repository;
 
@@ -19,12 +20,14 @@ public class RequestLoanReactiveRepositoryAdapter extends
         ReactiveAdapterOperations<RequestLoan, RequestLoanEntity, Long, RequestLoanReactiveRepository>
         implements RequestLoanRepository {
     public RequestLoanReactiveRepositoryAdapter(RequestLoanReactiveRepository repository, ObjectMapper mapper,
-            RequestLoanMapper requestLoanMapper) {
+                                                RequestLoanMapper requestLoanMapper, TransactionalGateway transactionalGateway) {
         super(repository, mapper, d -> mapper.map(d, RequestLoan.class));
         this.requestLoanMapper = requestLoanMapper;
+        this.transactionalGateway = transactionalGateway;
     }
 
     private final RequestLoanMapper requestLoanMapper;
+    private final TransactionalGateway transactionalGateway;
 
     @Override
     public Flux<RequestLoan> getAll() {
@@ -46,11 +49,11 @@ public class RequestLoanReactiveRepositoryAdapter extends
         log.trace("Saving new RequestLoan with document: {}", requestLoan.toString());
         RequestLoanEntity requestLoanEntity = requestLoanMapper.toEntity(requestLoan);
 
-        return repository.save(requestLoanEntity)
+        return transactionalGateway.doInTransaction(repository.save(requestLoanEntity)
                 .doOnNext(savedEntity -> log.info("Entity after save: {}", savedEntity)) // verifica el ID aquí
                 .map(requestLoanMapper::toDomain)
                 .doOnSuccess(savedRequestLoan -> log.info("Successfully created RequestLoan with ID: {}",
-                        savedRequestLoan.getId()));
+                        savedRequestLoan.getId())));
     }
 
 }
