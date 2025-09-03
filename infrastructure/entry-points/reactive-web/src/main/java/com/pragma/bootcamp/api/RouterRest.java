@@ -1,5 +1,6 @@
 package com.pragma.bootcamp.api;
 
+import com.pragma.bootcamp.api.dto.PageRequestDTO;
 import com.pragma.bootcamp.api.dto.RequestLoanCreateDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -9,6 +10,7 @@ import org.springdoc.core.annotations.RouterOperation;
 import org.springdoc.core.annotations.RouterOperations;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -22,10 +24,57 @@ public class RouterRest {
 
     @Bean
     @RouterOperations({
-            @RouterOperation(path = "/api/request-loan", method = {
-                    RequestMethod.POST}, beanClass = Handler.class, beanMethod = "createRequestLoan", operation = @Operation(operationId = "createRequestLoan", summary = "Crear solicitud de préstamo", requestBody = @RequestBody(required = true, content = @Content(schema = @Schema(implementation = RequestLoanCreateDTO.class)))))
+            @RouterOperation(
+                    path = "/api/request-loan",
+                    method = RequestMethod.POST,
+                    beanClass = Handler.class,
+                    beanMethod = "createRequestLoan",
+                    operation = @Operation(
+                            operationId = "createRequestLoan",
+                            summary = "Crear solicitud de préstamo",
+                            description = "Crea una nueva solicitud de préstamo.",
+                            requestBody = @RequestBody(
+                                    required = true,
+                                    content = @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            schema = @Schema(implementation = RequestLoanCreateDTO.class)
+                                    )
+                            ),
+                            responses = {
+                                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                                            responseCode = "200",
+                                            description = "Solicitud de préstamo creada exitosamente"
+                                    )
+                            }
+                    )
+            ),
+            @RouterOperation(
+                    path = "/api/v1/request-loans/search",
+                    method = RequestMethod.POST,
+                    beanClass = Handler.class,
+                    beanMethod = "searchWithFilters",
+                    operation = @Operation(
+                            operationId = "searchRequestLoans",
+                            summary = "Buscar solicitudes de préstamo con filtros",
+                            description = "Permite buscar solicitudes de préstamo utilizando filtros.",
+                            requestBody = @RequestBody(
+                                    required = true,
+                                    content = @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            schema = @Schema(implementation = PageRequestDTO.class)
+                                    )
+                            ),
+                            responses = {
+                                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                                            responseCode = "200",
+                                            description = "Búsqueda realizada exitosamente"
+                                    )
+                            }
+                    )
+            )
     })
     public RouterFunction<ServerResponse> routeRequestLoan(Handler handler) {
-        return route(POST(BASE_PATH), handler::createRequestLoan);
+        return route(POST(BASE_PATH), handler::createRequestLoan)
+                .andRoute(POST("/api/v1/request-loans/search"), handler::searchWithFilters);
     }
 }

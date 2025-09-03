@@ -1,12 +1,9 @@
 package com.pragma.bootcamp.usecase.requestloan;
 
-import static com.pragma.bootcamp.model.requeststatus.Status.PENDING;
-
-import java.math.BigDecimal;
-
+import com.pragma.bootcamp.common.PageRequest;
+import com.pragma.bootcamp.common.PageResponse;
 import com.pragma.bootcamp.model.client.exception.ClientNotFoundException;
 import com.pragma.bootcamp.model.client.gateways.ClientRepository;
-import com.pragma.bootcamp.model.loantype.LoanType;
 import com.pragma.bootcamp.model.loantype.exception.LoanAmountOutOfRangeException;
 import com.pragma.bootcamp.model.loantype.exception.LoanTypeNotFoundException;
 import com.pragma.bootcamp.model.loantype.gateways.LoanTypeRepository;
@@ -14,8 +11,6 @@ import com.pragma.bootcamp.model.requestloan.RequestLoan;
 import com.pragma.bootcamp.model.requestloan.gateways.RequestLoanRepository;
 import com.pragma.bootcamp.model.requeststatus.exception.RequestStatusNotFoundException;
 import com.pragma.bootcamp.model.requeststatus.gateways.RequestStatusRepository;
-import com.pragma.bootcamp.utils.gateways.TransactionalGateway;
-
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
@@ -52,4 +47,10 @@ public class RequestLoanUseCase {
                                 .build())
                 );
     }
+
+    public Mono<PageResponse<RequestLoan>> execute(PageRequest pageRequest) {
+        return loanRepository.findWithFilters(pageRequest);
+
+    }
+
 }

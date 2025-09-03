@@ -1,9 +1,6 @@
 package com.pragma.bootcamp.model.client;
-import lombok.Builder;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,7 +12,7 @@ import java.time.LocalDate;
 @Builder(toBuilder = true)
 public class Client {
 
-    private Long id;
+    private String id;
     private String name;
     private String lastName;
     private String document;

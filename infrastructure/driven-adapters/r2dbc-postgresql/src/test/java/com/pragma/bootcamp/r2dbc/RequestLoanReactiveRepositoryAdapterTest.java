@@ -4,7 +4,7 @@ import com.pragma.bootcamp.model.requestloan.RequestLoan;
 import com.pragma.bootcamp.r2dbc.adapter.RequestLoanReactiveRepository;
 import com.pragma.bootcamp.r2dbc.adapter.RequestLoanReactiveRepositoryAdapter;
 import com.pragma.bootcamp.r2dbc.entity.RequestLoanEntity;
-import com.pragma.bootcamp.r2dbc.mapper.RequestLoanMapper;
+import com.pragma.bootcamp.r2dbc.mapper.RequestLoanEntityMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.reactivecommons.utils.ObjectMapper;
@@ -20,7 +20,7 @@ class RequestLoanReactiveRepositoryAdapterTest {
 
     private RequestLoanReactiveRepository repository;
     private ObjectMapper objectMapper;
-    private RequestLoanMapper mapper;
+    private RequestLoanEntityMapper mapper;
 
     private RequestLoanReactiveRepositoryAdapter adapter;
 
@@ -28,7 +28,7 @@ class RequestLoanReactiveRepositoryAdapterTest {
     void setUp() {
         repository = mock(RequestLoanReactiveRepository.class);
         objectMapper = mock(ObjectMapper.class);
-        mapper = mock(RequestLoanMapper.class);
+        mapper = mock(RequestLoanEntityMapper.class);
 
         adapter = new RequestLoanReactiveRepositoryAdapter(repository, objectMapper, mapper);
     }
@@ -90,7 +90,6 @@ class RequestLoanReactiveRepositoryAdapterTest {
                 .expectNext(domain2)
                 .verifyComplete();
     }
-
 
     @Test
     void shouldDeleteLoanById() {

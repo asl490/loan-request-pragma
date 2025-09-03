@@ -1,7 +1,5 @@
-package com.pragma.bootcamp.model.requestloan;
+package com.pragma.bootcamp.api.dto;
 
-import com.pragma.bootcamp.model.loantype.LoanType;
-import com.pragma.bootcamp.model.requeststatus.RequestStatus;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -12,13 +10,13 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @ToString
 @Builder(toBuilder = true)
-public class RequestLoan {
+public class RequestLoanDTO {
     private Long id;
     private BigDecimal amount;
     private String email;
     private String dni;
     private Integer term;
-    private RequestStatus requestStatus;
-    private LoanType loanType;
+    private Long requestStatus;
+    private Long loanType;
 
 }

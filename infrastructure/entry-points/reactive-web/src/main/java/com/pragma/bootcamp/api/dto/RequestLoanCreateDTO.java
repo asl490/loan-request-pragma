@@ -1,18 +1,11 @@
 package com.pragma.bootcamp.api.dto;
 
-import java.math.BigDecimal;
-
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
 
 @Data
 @AllArgsConstructor
@@ -27,7 +20,7 @@ public class RequestLoanCreateDTO {
     @NotNull(message = "El plazo del préstamo no puede ser nulo")
     @Min(value = 1, message = "El plazo del préstamo debe ser al menos de 1 mes")
     @Max(value = 360, message = "El plazo del préstamo no puede exceder los 360 meses")
-    private Integer loanTerm;
+    private Integer term;
 
     @NotBlank(message = "El correo electrónico no puede estar vacío")
     @Email(message = "El correo electrónico no tiene un formato válido")
