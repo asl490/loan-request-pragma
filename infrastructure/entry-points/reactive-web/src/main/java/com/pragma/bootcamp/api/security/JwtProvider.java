@@ -11,8 +11,7 @@ import reactor.core.publisher.Mono;
 import javax.crypto.SecretKey;
 import java.io.Serializable;
 import java.security.SignatureException;
-import java.util.Date;
-import java.util.function.Function;
+
 @Slf4j
 @Component
 public class JwtProvider implements Serializable {
@@ -22,12 +21,6 @@ public class JwtProvider implements Serializable {
 
     private SecretKey secretKey;
 
-//    public Claims getAllClaimsFromToken(String token) {
-//        if (secretKey == null) {
-//            secretKey = Keys.hmacShaKeyFor(secret.getBytes());
-//        }
-//        return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
-//    }
     public Mono<Claims> getClaimsFromToken(String token) {
 
         return Mono.fromCallable(() -> Jwts.parser()
@@ -37,6 +30,7 @@ public class JwtProvider implements Serializable {
                         .getPayload())
                 .onErrorMap(this::mapJwtException);
     }
+
     private SecretKey getKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secret);
         return Keys.hmacShaKeyFor(keyBytes);
@@ -51,10 +45,6 @@ public class JwtProvider implements Serializable {
                 });
     }
 
-//    public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
-//        final Claims claims = getAllClaimsFromToken(token);
-//        return claimsResolver.apply(claims);
-//    }
     private Throwable mapJwtException(Throwable ex) {
         String message = switch (ex) {
             case SecurityException ignored -> {
@@ -90,19 +80,4 @@ public class JwtProvider implements Serializable {
         return new JwtException(message, ex);
     }
 
-//    public Date getExpirationDateFromToken(String token) {
-//        return getClaimFromToken(token, Claims::getExpiration);
-//    }
-
-//    private Boolean isTokenExpired(String token) {
-//        final Date expiration = getExpirationDateFromToken(token);
-//        return expiration.before(new Date());
-//    }
-
-//    public Boolean validateToken(String token) {
-//        // For this context, we only care if the token is not expired and well-formed.
-//        // The signature validation is handled by getAllClaimsFromToken.
-//        // In a real scenario, you might also check against a user details service.
-//        return !isTokenExpired(token);
-//    }
 }

@@ -4,6 +4,7 @@ import com.pragma.bootcamp.common.FilterCriteria;
 import com.pragma.bootcamp.common.PageRequest;
 import com.pragma.bootcamp.common.PageResponse;
 import com.pragma.bootcamp.model.requestloan.RequestLoan;
+import com.pragma.bootcamp.model.requestloan.RequestLoanInfo;
 import com.pragma.bootcamp.model.requestloan.gateways.RequestLoanRepository;
 import com.pragma.bootcamp.r2dbc.entity.RequestLoanEntity;
 import com.pragma.bootcamp.r2dbc.helper.ReactiveAdapterOperations;
@@ -18,7 +19,12 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -28,6 +34,7 @@ public class RequestLoanReactiveRepositoryAdapter extends
     private final RequestLoanEntityMapper requestLoanMapper;
     private final TransactionalGateway transactionalGateway;
     private final R2dbcEntityTemplate template;
+    private final Long APPROVED_STATUS = 2L;
 
     public RequestLoanReactiveRepositoryAdapter(RequestLoanReactiveRepository repository, ObjectMapper mapper,
                                                 RequestLoanEntityMapper requestLoanMapper, TransactionalGateway transactionalGateway, R2dbcEntityTemplate template) {
@@ -149,4 +156,97 @@ public class RequestLoanReactiveRepositoryAdapter extends
         };
     }
 
+    @Override
+    public Mono<PageResponse<RequestLoanInfo>> findWithFiltersInfo(PageRequest pageRequest) {
+        return buildQuery(pageRequest.getFilters())
+                .flatMap(criteria -> {
+                    // Query principal con paginación
+                    Query query = Query.query(criteria)
+                            .offset((long) pageRequest.getPage() * pageRequest.getSize())
+                            .limit(pageRequest.getSize());
+
+//                    // Aplicar ordenamiento
+//                    if (pageRequest.getSortBy() != null) {
+//                        query = "DESC".equalsIgnoreCase(pageRequest.getSortDirection()) ?
+//                                query.sort(org.springframework.data.domain.Sort.by(pageRequest.getSortBy()).descending()) :
+//                                query.sort(org.springframework.data.domain.Sort.by(pageRequest.getSortBy()).ascending());
+//                    }
+
+                    // Query para contar total
+                    Query countQuery = Query.query(criteria);
+
+                    return Mono.zip(
+                            template.select(query, RequestLoanEntity.class).collectList(),
+                            template.count(countQuery, RequestLoanEntity.class)
+                    );
+                })
+                .flatMap(tuple -> {
+                    List<RequestLoanEntity> entities = tuple.getT1();
+                    Long totalElements = tuple.getT2();
+
+                    // Obtener DNIs únicos para calcular sumas
+                    Set<String> uniqueDnis = entities.stream()
+                            .map(RequestLoanEntity::getDni)
+                            .collect(Collectors.toSet());
+
+                    // Calcular suma de préstamos aprobados por cada DNI
+                    return getApprovedLoansSumByDnis(uniqueDnis)
+                            .map(approvedSums -> {
+                                List<RequestLoanInfo> content = entities.stream()
+                                        .map(entity -> toModelWithApprovedSum(entity, approvedSums))
+                                        .toList();
+
+                                return PageResponse.<RequestLoanInfo>builder()
+                                        .content(content)
+                                        .page(pageRequest.getPage())
+                                        .size(pageRequest.getSize())
+                                        .totalElements(totalElements)
+                                        .totalPages((int) Math.ceil((double) totalElements / pageRequest.getSize()))
+                                        .first(pageRequest.getPage() == 0)
+                                        .last(pageRequest.getPage() >= (int) Math.ceil((double) totalElements / pageRequest.getSize()) - 1)
+                                        .build();
+                            });
+                });
+    }
+
+    private Mono<Map<String, BigDecimal>> getApprovedLoansSumByDnis(Set<String> dnis) {
+        if (dnis.isEmpty()) {
+            return Mono.just(new HashMap<>());
+        }
+
+        // Asumiendo que el estado aprobado es 2 (ajustar según tu lógica de negocio)
+        String sql = """
+                SELECT dni, COALESCE(SUM(amount), 0) as approved_sum 
+                FROM RequestLoan 
+                WHERE dni IN (:dnis) AND id_state = :approvedStatus 
+                GROUP BY dni
+                """;
+
+        return template.getDatabaseClient()
+                .sql(sql)
+                .bind("dnis", dnis)
+                .bind("approvedStatus", APPROVED_STATUS) // Estado aprobado - ajustar según tu caso
+                .map(row -> Map.entry(
+                        row.get("dni", String.class),
+                        row.get("approved_sum", BigDecimal.class)
+                ))
+                .all()
+                .collectMap(Map.Entry::getKey, Map.Entry::getValue)
+                .doOnNext(result -> log.debug("Approved loans sums: {}", result));
+    }
+
+    private RequestLoanInfo toModelWithApprovedSum(RequestLoanEntity entity, Map<String, BigDecimal> approvedSums) {
+        BigDecimal approvedSum = approvedSums.getOrDefault(entity.getDni(), BigDecimal.ZERO);
+
+        return RequestLoanInfo.builder()
+                .id(entity.getId())
+                .amount(entity.getAmount())
+                .email(entity.getEmail())
+                .dni(entity.getDni())
+                .term(entity.getTerm())
+                .requestStatus(entity.getRequestStatus())
+                .loanType(entity.getLoanType())
+                .approvedLoansSum(approvedSum) // NUEVO CAMPO
+                .build();
+    }
 }

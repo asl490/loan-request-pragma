@@ -1,9 +1,7 @@
 package com.pragma.bootcamp.api.exceptions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pragma.bootcamp.exception.DataIntegrityViolationException;
-import com.pragma.bootcamp.exception.NotFoundException;
-import com.pragma.bootcamp.exception.UserValidationException;
+import com.pragma.bootcamp.exception.*;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -110,6 +108,27 @@ enum ErrorStrategy {
                     exchange.getRequest().getPath().value());
             log.warn(errorResponse.getMessage() + " {}", errors.toString());
             return writeResponse(exchange, HttpStatus.BAD_REQUEST, errorResponse, objectMapper);
+        }
+    },
+    FORBIDDEN_EXCEPTION(ForbiddenException.class) {
+        @Override
+        public Mono<Void> handle(ServerWebExchange exchange, Throwable ex, ObjectMapper objectMapper,
+                                 MessageSource messageSource) {
+            ErrorResponse errorResponse = buildErrorResponse(HttpStatus.FORBIDDEN.name(), ex.getMessage(), null,
+                    exchange.getRequest().getPath().value());
+            log.warn(errorResponse.getMessage(), ex.getMessage());
+            return writeResponse(exchange, HttpStatus.FORBIDDEN, errorResponse, objectMapper);
+        }
+    },
+
+    BAD_CREDENTIALS(BadCredentialsException.class) {
+        @Override
+        public Mono<Void> handle(ServerWebExchange exchange, Throwable ex, ObjectMapper objectMapper,
+                                 MessageSource messageSource) {
+            ErrorResponse errorResponse = buildErrorResponse(HttpStatus.FORBIDDEN.name(), ex.getMessage(), null,
+                    exchange.getRequest().getPath().value());
+            log.warn(errorResponse.getMessage(), ex.getMessage());
+            return writeResponse(exchange, HttpStatus.FORBIDDEN, errorResponse, objectMapper);
         }
     },
     USER_VALIDATION(UserValidationException.class) {

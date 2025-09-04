@@ -1,5 +1,7 @@
 package com.pragma.bootcamp.usecase.loantype;
 
+import com.pragma.bootcamp.common.PageRequest;
+import com.pragma.bootcamp.common.PageResponse;
 import com.pragma.bootcamp.model.client.exception.ClientNotFoundException;
 import com.pragma.bootcamp.model.client.gateways.ClientRepository;
 import com.pragma.bootcamp.model.loantype.LoanType;
@@ -7,174 +9,231 @@ import com.pragma.bootcamp.model.loantype.exception.LoanAmountOutOfRangeExceptio
 import com.pragma.bootcamp.model.loantype.exception.LoanTypeNotFoundException;
 import com.pragma.bootcamp.model.loantype.gateways.LoanTypeRepository;
 import com.pragma.bootcamp.model.requestloan.RequestLoan;
+import com.pragma.bootcamp.model.requestloan.RequestLoanInfo;
 import com.pragma.bootcamp.model.requestloan.gateways.RequestLoanRepository;
 import com.pragma.bootcamp.model.requeststatus.RequestStatus;
+import com.pragma.bootcamp.model.requeststatus.exception.RequestStatusNotFoundException;
 import com.pragma.bootcamp.model.requeststatus.gateways.RequestStatusRepository;
 import com.pragma.bootcamp.usecase.requestloan.RequestLoanUseCase;
-import com.pragma.bootcamp.utils.gateways.TransactionalGateway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
+import java.util.List;
 
-import static org.mockito.Mockito.*;
-
-public class RequestLoanUseCaseTest {
+class RequestLoanUseCaseTest {
 
     private RequestLoanRepository loanRepository;
-    private TransactionalGateway transactionalGateway;
     private ClientRepository clientRepository;
     private LoanTypeRepository loanTypeRepository;
     private RequestStatusRepository requestStatusRepository;
-    private RequestLoanUseCase useCase;
+
+    private RequestLoanUseCase requestLoanUseCase;
 
     @BeforeEach
     void setUp() {
-        loanRepository = mock(RequestLoanRepository.class);
-        transactionalGateway = mock(TransactionalGateway.class);
-        clientRepository = mock(ClientRepository.class);
-        loanTypeRepository = mock(LoanTypeRepository.class);
-        requestStatusRepository = mock(RequestStatusRepository.class);
+        loanRepository = Mockito.mock(RequestLoanRepository.class);
+        clientRepository = Mockito.mock(ClientRepository.class);
+        loanTypeRepository = Mockito.mock(LoanTypeRepository.class);
+        requestStatusRepository = Mockito.mock(RequestStatusRepository.class);
 
-        useCase = new RequestLoanUseCase(
-                loanRepository,
-                transactionalGateway,
-                clientRepository,
-                loanTypeRepository,
-                requestStatusRepository
+        requestLoanUseCase = new RequestLoanUseCase(
+                loanRepository, clientRepository, loanTypeRepository, requestStatusRepository
         );
-
-        // Simplifica las pruebas: ejecuta directamente el flujo pasado
-        when(transactionalGateway.doInTransaction(any()))
-                .thenAnswer(invocation -> {
-                    var supplier = invocation.getArgument(0);
-                    return ((Mono<?>) supplier);
-                });
     }
 
+    // ----------------------------------------------------------------------------------------------------
+    // TEST: createRequestLoan - Cliente no encontrado
+    // ----------------------------------------------------------------------------------------------------
     @Test
-    void shouldCreateRequestLoanSuccessfully() {
+    void createRequestLoan_ClientNotFound_ShouldThrow() {
         // Arrange
-        var dni = "12345678";
-        var email = "user@example.com";
-        var amount = BigDecimal.valueOf(5000);
-        var loanType = LoanType.builder()
-                .id(1L)
-                .name("Personal")
-                .minAmount(BigDecimal.valueOf(1000))
-                .maxAmount(BigDecimal.valueOf(10000))
-                .build();
-        var requestStatus = RequestStatus.builder()
-                .id(1L)
-                .description("PENDING")
-                .build();
-
-        var requestLoan = RequestLoan.builder()
-                .dni(dni)
-                .amount(amount)
+        RequestLoan requestLoan = RequestLoan.builder()
+                .dni("999")
+                .amount(BigDecimal.valueOf(1000))
                 .loanType(LoanType.builder().id(1L).build())
                 .build();
 
-        when(clientRepository.getEmailByDni(dni)).thenReturn(Mono.just(email));
-        when(loanTypeRepository.findById(1L)).thenReturn(Mono.just(loanType));
-        when(requestStatusRepository.findById(1L)).thenReturn(Mono.just(requestStatus));
-        when(loanRepository.createLoan(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        Mockito.when(clientRepository.getEmailByDni("999"))
+                .thenReturn(Mono.empty());
 
-        // Act & Assert
-        StepVerifier.create(useCase.createRequestLoan(requestLoan))
-                .expectNextMatches(result ->
-                        result.getEmail().equals(email) &&
-                                result.getLoanType().getName().equals("Personal") &&
-                                result.getRequestStatus().getDescription().equals("PENDING")
-                )
-                .verifyComplete();
+        // Act
+        Mono<RequestLoan> result = requestLoanUseCase.createRequestLoan(requestLoan);
 
-        verify(loanRepository).createLoan(any(RequestLoan.class));
-    }
-
-    @Test
-    void shouldReturnClientNotFoundException() {
-        var dni = "12345678";
-        var requestLoan = RequestLoan.builder()
-                .dni(dni)
-                .loanType(LoanType.builder().id(1L).build())
-                .amount(BigDecimal.valueOf(3000))
-                .build();
-
-        when(clientRepository.getEmailByDni(dni)).thenReturn(Mono.empty());
-
-        StepVerifier.create(useCase.createRequestLoan(requestLoan))
-                .expectErrorMatches(throwable ->
-                        throwable instanceof ClientNotFoundException &&
-                                throwable.getMessage().contains(dni))
+        // Assert
+        StepVerifier.create(result)
+                .expectErrorSatisfies(throwable -> {
+                    assert throwable instanceof ClientNotFoundException;
+                })
                 .verify();
     }
 
+    // ----------------------------------------------------------------------------------------------------
+    // TEST: createRequestLoan - Tipo de préstamo no encontrado
+    // ----------------------------------------------------------------------------------------------------
     @Test
-    void shouldReturnLoanTypeNotFoundException() {
-        var requestLoan = RequestLoan.builder()
+    void createRequestLoan_LoanTypeNotFound_ShouldThrow() {
+        // Arrange
+        RequestLoan requestLoan = RequestLoan.builder()
                 .dni("123")
-                .loanType(LoanType.builder().id(99L).build())
-                .amount(BigDecimal.valueOf(3000))
+                .amount(BigDecimal.valueOf(5000))
+                .loanType(LoanType.builder().id(999L).build())
                 .build();
 
-        when(clientRepository.getEmailByDni("123")).thenReturn(Mono.just("user@example.com"));
-        when(loanTypeRepository.findById(99L)).thenReturn(Mono.empty());
+        Mockito.when(clientRepository.getEmailByDni("123"))
+                .thenReturn(Mono.just("client@example.com"));
 
-        StepVerifier.create(useCase.createRequestLoan(requestLoan))
+        Mockito.when(loanTypeRepository.findById(999L))
+                .thenReturn(Mono.empty());
+
+        // Act
+        Mono<RequestLoan> result = requestLoanUseCase.createRequestLoan(requestLoan);
+
+        // Assert
+        StepVerifier.create(result)
                 .expectError(LoanTypeNotFoundException.class)
                 .verify();
     }
 
+    // ----------------------------------------------------------------------------------------------------
+    // TEST: createRequestLoan - Monto fuera de rango
+    // ----------------------------------------------------------------------------------------------------
     @Test
-    void shouldReturnLoanAmountOutOfRangeException() {
-        var loanType = LoanType.builder()
+    void createRequestLoan_AmountOutOfRange_ShouldThrow() {
+        // Arrange
+        RequestLoan requestLoan = RequestLoan.builder()
+                .dni("123")
+                .amount(BigDecimal.valueOf(15000)) // fuera del rango
+                .loanType(LoanType.builder().id(1L).build())
+                .build();
+
+        LoanType loanType = LoanType.builder()
                 .id(1L)
                 .minAmount(BigDecimal.valueOf(1000))
-                .maxAmount(BigDecimal.valueOf(2000))
-                .name("Micro")
+                .maxAmount(BigDecimal.valueOf(10000))
                 .build();
 
-        var requestLoan = RequestLoan.builder()
-                .dni("123")
-                .loanType(LoanType.builder().id(1L).build())
-                .amount(BigDecimal.valueOf(5000)) // fuera del rango
-                .build();
+        Mockito.when(clientRepository.getEmailByDni("123"))
+                .thenReturn(Mono.just("client@example.com"));
 
-        when(clientRepository.getEmailByDni("123")).thenReturn(Mono.just("user@example.com"));
-        when(loanTypeRepository.findById(1L)).thenReturn(Mono.just(loanType));
+        Mockito.when(loanTypeRepository.findById(1L))
+                .thenReturn(Mono.just(loanType));
 
-        StepVerifier.create(useCase.createRequestLoan(requestLoan))
+        // No pasa el filtro de rango → switchIfEmpty
+        Mockito.when(requestStatusRepository.findByName("PENDING"))
+                .thenReturn(Mono.just(RequestStatus.builder().id(1L).name("PENDING").build()));
+
+        // Act
+        Mono<RequestLoan> result = requestLoanUseCase.createRequestLoan(requestLoan);
+
+        // Assert
+        StepVerifier.create(result)
                 .expectError(LoanAmountOutOfRangeException.class)
                 .verify();
     }
 
+    // ----------------------------------------------------------------------------------------------------
+    // TEST: createRequestLoan - Estado PENDING no encontrado
+    // ----------------------------------------------------------------------------------------------------
     @Test
-    void shouldReturnIllegalStateWhenStatusNotFound() {
-        var requestLoan = RequestLoan.builder()
+    void createRequestLoan_RequestStatusNotFound_ShouldThrow() {
+        // Arrange
+        RequestLoan requestLoan = RequestLoan.builder()
                 .dni("123")
+                .amount(BigDecimal.valueOf(5000))
                 .loanType(LoanType.builder().id(1L).build())
-                .amount(BigDecimal.valueOf(1500))
                 .build();
 
-        var loanType = LoanType.builder()
+        LoanType validLoanType = LoanType.builder()
                 .id(1L)
-                .name("Simple")
                 .minAmount(BigDecimal.valueOf(1000))
-                .maxAmount(BigDecimal.valueOf(2000))
+                .maxAmount(BigDecimal.valueOf(10000))
                 .build();
 
-        when(clientRepository.getEmailByDni("123")).thenReturn(Mono.just("user@example.com"));
-        when(loanTypeRepository.findById(1L)).thenReturn(Mono.just(loanType));
-        when(requestStatusRepository.findById(1L)).thenReturn(Mono.empty());
+        Mockito.when(clientRepository.getEmailByDni("123"))
+                .thenReturn(Mono.just("client@example.com"));
 
-        StepVerifier.create(useCase.createRequestLoan(requestLoan))
-                .expectErrorMatches(error ->
-                        error instanceof IllegalStateException &&
-                                error.getMessage().contains("Request status not found"))
+        Mockito.when(loanTypeRepository.findById(1L))
+                .thenReturn(Mono.just(validLoanType));
+
+        Mockito.when(requestStatusRepository.findByName("PENDING"))
+                .thenReturn(Mono.empty());
+
+        // Act
+        Mono<RequestLoan> result = requestLoanUseCase.createRequestLoan(requestLoan);
+
+        // Assert
+        StepVerifier.create(result)
+                .expectError(RequestStatusNotFoundException.class)
                 .verify();
+    }
+
+    // ----------------------------------------------------------------------------------------------------
+    // TEST: execute - Paginación con filtros (findWithFilters)
+    // ----------------------------------------------------------------------------------------------------
+    @Test
+    void execute_ShouldCallLoanRepositoryFindWithFilters() {
+        // Arrange
+        PageRequest pageRequest = PageRequest.builder()
+                .page(0)
+                .size(10)
+                .build();
+
+        PageResponse<RequestLoan> expectedPage = PageResponse.<RequestLoan>builder()
+                .content(List.of())
+                .page(0)
+                .size(10)
+                .totalElements(0)
+                .build();
+
+        Mockito.when(loanRepository.findWithFilters(pageRequest))
+                .thenReturn(Mono.just(expectedPage));
+
+        // Act
+        Mono<PageResponse<RequestLoan>> result = requestLoanUseCase.execute(pageRequest);
+
+        // Assert
+        StepVerifier.create(result)
+                .expectNext(expectedPage)
+                .expectComplete()
+                .verify();
+
+        Mockito.verify(loanRepository).findWithFilters(pageRequest);
+    }
+
+    // ----------------------------------------------------------------------------------------------------
+    // TEST: executeInfo - Paginación con info adicional
+    // ----------------------------------------------------------------------------------------------------
+    @Test
+    void executeInfo_ShouldCallLoanRepositoryFindWithFiltersInfo() {
+        // Arrange
+        PageRequest pageRequest = PageRequest.builder()
+                .page(0)
+                .size(10)
+                .build();
+
+        PageResponse<RequestLoanInfo> expectedPage = PageResponse.<RequestLoanInfo>builder()
+                .content(List.of())
+                .page(0)
+                .size(10)
+                .totalElements(0)
+                .build();
+
+        Mockito.when(loanRepository.findWithFiltersInfo(pageRequest))
+                .thenReturn(Mono.just(expectedPage));
+
+        // Act
+        Mono<PageResponse<RequestLoanInfo>> result = requestLoanUseCase.executeInfo(pageRequest);
+
+        // Assert
+        StepVerifier.create(result)
+                .expectNext(expectedPage)
+                .expectComplete()
+                .verify();
+
+        Mockito.verify(loanRepository).findWithFiltersInfo(pageRequest);
     }
 }

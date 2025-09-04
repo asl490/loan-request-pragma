@@ -8,6 +8,7 @@ import com.pragma.bootcamp.model.loantype.exception.LoanAmountOutOfRangeExceptio
 import com.pragma.bootcamp.model.loantype.exception.LoanTypeNotFoundException;
 import com.pragma.bootcamp.model.loantype.gateways.LoanTypeRepository;
 import com.pragma.bootcamp.model.requestloan.RequestLoan;
+import com.pragma.bootcamp.model.requestloan.RequestLoanInfo;
 import com.pragma.bootcamp.model.requestloan.gateways.RequestLoanRepository;
 import com.pragma.bootcamp.model.requeststatus.exception.RequestStatusNotFoundException;
 import com.pragma.bootcamp.model.requeststatus.gateways.RequestStatusRepository;
@@ -50,6 +51,11 @@ public class RequestLoanUseCase {
 
     public Mono<PageResponse<RequestLoan>> execute(PageRequest pageRequest) {
         return loanRepository.findWithFilters(pageRequest);
+
+    }
+
+    public Mono<PageResponse<RequestLoanInfo>> executeInfo(PageRequest pageRequest) {
+        return loanRepository.findWithFiltersInfo(pageRequest);
 
     }
 

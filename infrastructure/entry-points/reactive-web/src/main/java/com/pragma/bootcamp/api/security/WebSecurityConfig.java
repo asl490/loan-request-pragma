@@ -1,14 +1,18 @@
 package com.pragma.bootcamp.api.security;
 
+import com.pragma.bootcamp.api.exceptions.CustomAccessDeniedHandler;
+import com.pragma.bootcamp.api.exceptions.CustomAuthenticationEntryPoint;
+import com.pragma.bootcamp.api.exceptions.CustomAuthenticationFailureHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-import reactor.core.publisher.Mono;
+import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
+import org.springframework.security.web.server.context.ServerSecurityContextRepository;
 
 @Configuration
 @EnableWebFluxSecurity
@@ -25,19 +29,24 @@ public class WebSecurityConfig {
 
     private final AuthenticationManager authenticationManager;
     private final SecurityContextRepository securityContextRepository;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
 
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
+                                                         ReactiveAuthenticationManager authenticationManager,
+                                                         ServerSecurityContextRepository securityContextRepository) {
+        AuthenticationWebFilter authenticationWebFilter = new AuthenticationWebFilter(authenticationManager);
+        authenticationWebFilter.setSecurityContextRepository(securityContextRepository);
+        authenticationWebFilter.setAuthenticationFailureHandler(customAuthenticationFailureHandler);
         return http
-//                .exceptionHandling()
-//                .authenticationEntryPoint((swe, e) ->
-//                        Mono.fromRunnable(() -> swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED))
-//                ).accessDeniedHandler((swe, e) ->
-//                        Mono.fromRunnable(() -> swe.getResponse().setStatusCode(HttpStatus.FORBIDDEN))
-//                )
+                .exceptionHandling(exceptionHandling -> exceptionHandling
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                )
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
-//                .formLogin().disable()
-//                .httpBasic().disable()
+
                 .authenticationManager(authenticationManager)
                 .securityContextRepository(securityContextRepository)
                 .authorizeExchange(exchange -> exchange
@@ -45,10 +54,6 @@ public class WebSecurityConfig {
                         .pathMatchers(SWAGGER_PATHS).permitAll()
                         .pathMatchers("/api/v1/**").authenticated()
                         .anyExchange().authenticated())
-                // These paths are publicly accessible
-//                .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/webjars/**", "/actuator/**").permitAll()
-                // All other paths require authentication
-//                .anyExchange().authenticated()
                 .build();
     }
 }

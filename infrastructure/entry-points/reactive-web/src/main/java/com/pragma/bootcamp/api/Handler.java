@@ -1,12 +1,10 @@
 package com.pragma.bootcamp.api;
 
-import com.pragma.bootcamp.api.dto.PageRequestDTO;
-import com.pragma.bootcamp.api.dto.PageResponseDTO;
-import com.pragma.bootcamp.api.dto.RequestLoanCreateDTO;
-import com.pragma.bootcamp.api.dto.RequestLoanDTO;
+import com.pragma.bootcamp.api.dto.*;
 import com.pragma.bootcamp.api.mapper.RequestLoanMapper;
 import com.pragma.bootcamp.common.PageRequest;
 import com.pragma.bootcamp.common.PageResponse;
+import com.pragma.bootcamp.exception.ForbiddenException;
 import com.pragma.bootcamp.model.requestloan.RequestLoan;
 import com.pragma.bootcamp.usecase.requestloan.RequestLoanUseCase;
 import jakarta.validation.ConstraintViolation;
@@ -15,6 +13,10 @@ import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -32,20 +34,27 @@ public class Handler {
     private final Validator validator;
     private final RequestLoanMapper requestLoanMapper;
 
+    @PreAuthorize("hasRole('CLIENTE')")
     public Mono<ServerResponse> createRequestLoan(ServerRequest serverRequest) {
         log.trace("Received request to save a new loan.");
-        return serverRequest
-                .bodyToMono(RequestLoanCreateDTO.class)
-                .doOnNext(dto -> log.trace("Request body: {}", dto))
-                .doOnNext(this::validate)
-                .map(requestLoanMapper::toDomain)
-                .flatMap(requestLoanUseCase::createRequestLoan)
-                .map(requestLoanMapper::toDTO)
-                .flatMap(createdRequest ->
-                        ServerResponse.ok()
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .bodyValue(createdRequest)
-                );
+
+        return getAuthenticatedUser()
+                .flatMap(user -> {
+                    log.trace("Authenticated user: {}", user);
+                    return serverRequest
+                            .bodyToMono(RequestLoanCreateDTO.class)
+                            .doOnNext(dto -> log.trace("Request body: {}", dto))
+                            .flatMap(dto -> validateDniMatch(dto, user)) // aquí usamos la validación
+                            .doOnNext(this::validate)
+                            .map(requestLoanMapper::toDomain)
+                            .flatMap(requestLoanUseCase::createRequestLoan)
+                            .map(requestLoanMapper::toDTO)
+                            .flatMap(createdRequest ->
+                                    ServerResponse.ok()
+                                            .contentType(MediaType.APPLICATION_JSON)
+                                            .bodyValue(createdRequest)
+                            );
+                });
 
     }
 
@@ -66,6 +75,24 @@ public class Handler {
                 ;
     }
 
+    public Mono<ServerResponse> searchWithFiltersInfo(ServerRequest serverRequest) {
+        log.trace("Received request to search loans with filters.");
+        return serverRequest
+                .bodyToMono(PageRequestDTO.class)
+                .doOnNext(dto -> log.trace("Search request body: {}", dto))
+                .doOnNext(this::validatePageRequest)
+                .map(this::toPageRequestDomain)
+                .flatMap(requestLoanUseCase::executeInfo)
+                .doOnNext(dto -> log.trace("Search request body: {}", dto))
+//                .map(this::toPageResponseDTO)
+                .flatMap(response ->
+                        ServerResponse.ok()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(response)
+                )
+                ;
+    }
+
     private PageRequest toPageRequestDomain(PageRequestDTO dto) {
         return PageRequest.builder()
                 .page(dto.getPage())
@@ -74,6 +101,21 @@ public class Handler {
 //                .sortDirection(dto.getSortDirection())
                 .filters(dto.getFilters())
                 .build();
+    }
+
+    private Mono<UserTokenData> getAuthenticatedUser() {
+        return ReactiveSecurityContextHolder.getContext()
+                .map(SecurityContext::getAuthentication)
+                .cast(UsernamePasswordAuthenticationToken.class)
+                .map(auth -> (UserTokenData) auth.getPrincipal());
+    }
+
+    private Mono<RequestLoanCreateDTO> validateDniMatch(RequestLoanCreateDTO dto, UserTokenData user) {
+        if (dto.getDni() == null || !dto.getDni().equals(user.document())) {
+            log.warn("DNI from request ({}) does not match authenticated user's document ({})", dto.getDni(), user.document());
+            return Mono.error(new ForbiddenException("DNI does not match the authenticated user's document"));
+        }
+        return Mono.just(dto);
     }
 
     private PageResponseDTO<RequestLoanDTO> toPageResponseDTO(

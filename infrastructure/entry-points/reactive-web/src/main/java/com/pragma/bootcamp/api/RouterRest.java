@@ -71,10 +71,35 @@ public class RouterRest {
                                     )
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = "/api/v1/request-loans/search-info",
+                    method = RequestMethod.POST,
+                    beanClass = Handler.class,
+                    beanMethod = "searchWithFilters",
+                    operation = @Operation(
+                            operationId = "searchRequestLoans",
+                            summary = "Buscar solicitudes de préstamo con filtros",
+                            description = "Permite buscar solicitudes de préstamo utilizando filtros.",
+                            requestBody = @RequestBody(
+                                    required = true,
+                                    content = @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            schema = @Schema(implementation = PageRequestDTO.class)
+                                    )
+                            )
+//                            responses = {
+//                                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                                            responseCode = "200",
+//                                            description = "Búsqueda realizada exitosamente"
+//                                    )
+//                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> routeRequestLoan(Handler handler) {
         return route(POST(BASE_PATH), handler::createRequestLoan)
-                .andRoute(POST("/api/v1/request-loans/search"), handler::searchWithFilters);
+                .andRoute(POST("/api/v1/request-loans/search"), handler::searchWithFilters)
+                .andRoute(POST("/api/v1/request-loans/search-info"), handler::searchWithFiltersInfo);
     }
 }
