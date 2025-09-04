@@ -5,9 +5,11 @@ import com.pragma.bootcamp.r2dbc.adapter.RequestLoanReactiveRepository;
 import com.pragma.bootcamp.r2dbc.adapter.RequestLoanReactiveRepositoryAdapter;
 import com.pragma.bootcamp.r2dbc.entity.RequestLoanEntity;
 import com.pragma.bootcamp.r2dbc.mapper.RequestLoanEntityMapper;
+import com.pragma.bootcamp.utils.gateways.TransactionalGateway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.reactivecommons.utils.ObjectMapper;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -21,6 +23,8 @@ class RequestLoanReactiveRepositoryAdapterTest {
     private RequestLoanReactiveRepository repository;
     private ObjectMapper objectMapper;
     private RequestLoanEntityMapper mapper;
+    private TransactionalGateway transactionalGateway;
+    private R2dbcEntityTemplate r2dbcEntityTemplate;
 
     private RequestLoanReactiveRepositoryAdapter adapter;
 
@@ -29,8 +33,10 @@ class RequestLoanReactiveRepositoryAdapterTest {
         repository = mock(RequestLoanReactiveRepository.class);
         objectMapper = mock(ObjectMapper.class);
         mapper = mock(RequestLoanEntityMapper.class);
+        transactionalGateway = mock(TransactionalGateway.class);
+        r2dbcEntityTemplate = mock(R2dbcEntityTemplate.class);
 
-        adapter = new RequestLoanReactiveRepositoryAdapter(repository, objectMapper, mapper);
+        adapter = new RequestLoanReactiveRepositoryAdapter(repository, objectMapper, mapper, transactionalGateway, r2dbcEntityTemplate);
     }
 
     @Test
