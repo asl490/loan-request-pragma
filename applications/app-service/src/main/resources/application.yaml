@@ -33,7 +33,7 @@ cors:
 app:
   base-url: http://localhost:8080
 client:
-  user-path: /api/v1/user/{dni}
+  user-path: /api/v1/user/find-document/{dni}
 jwt:
   secret: "VGhpcyBpcyBhIHZlcnkgc2VjdXJlIHNlY3JldCBmb3Igand0IHNpZ25pbmcgYW5kIGl0IG11c3QgYmUgbG9uZyBlbm91Z2ggdG8gYmUgc2VjdXJl"
   expiration: 3600

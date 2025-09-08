@@ -50,7 +50,6 @@ public class WebSecurityConfig {
                 .authenticationManager(authenticationManager)
                 .securityContextRepository(securityContextRepository)
                 .authorizeExchange(exchange -> exchange
-                        .pathMatchers("/api/v1/auth/login").permitAll()
                         .pathMatchers(SWAGGER_PATHS).permitAll()
                         .pathMatchers("/api/v1/**").authenticated()
                         .anyExchange().authenticated())

@@ -58,6 +58,7 @@ public class Handler {
 
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'ASESOR')")
     public Mono<ServerResponse> searchWithFilters(ServerRequest serverRequest) {
         log.trace("Received request to search loans with filters.");
         return serverRequest
@@ -75,6 +76,7 @@ public class Handler {
                 ;
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'ASESOR')")
     public Mono<ServerResponse> searchWithFiltersInfo(ServerRequest serverRequest) {
         log.trace("Received request to search loans with filters.");
         return serverRequest
@@ -84,7 +86,6 @@ public class Handler {
                 .map(this::toPageRequestDomain)
                 .flatMap(requestLoanUseCase::executeInfo)
                 .doOnNext(dto -> log.trace("Search request body: {}", dto))
-//                .map(this::toPageResponseDTO)
                 .flatMap(response ->
                         ServerResponse.ok()
                                 .contentType(MediaType.APPLICATION_JSON)
