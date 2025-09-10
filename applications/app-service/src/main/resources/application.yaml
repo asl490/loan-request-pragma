@@ -31,7 +31,7 @@ logging:
 cors:
   allowed-origins: "http://localhost:4200,http://localhost:8080"
 app:
-  base-url: http://localhost:8080
+  base-url: ${AUTH_SERVICE_BASE_URL:http://localhost:8080}
 client:
   user-path: /api/v1/user/find-document/{dni}
 jwt:
