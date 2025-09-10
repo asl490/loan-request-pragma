@@ -6,7 +6,6 @@ import com.pragma.bootcamp.r2dbc.adapter.RequestStatusReactiveRepositoryAdapter;
 import com.pragma.bootcamp.r2dbc.entity.RequestStatusEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.reactivecommons.utils.ObjectMapper;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;

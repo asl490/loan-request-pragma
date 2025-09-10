@@ -1,11 +1,5 @@
 package com.pragma.bootcamp.usecase.requestloan;
 
-import java.math.BigDecimal;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import com.pragma.bootcamp.model.client.exception.ClientNotFoundException;
 import com.pragma.bootcamp.model.client.gateways.ClientRepository;
 import com.pragma.bootcamp.model.loantype.LoanType;
@@ -17,9 +11,13 @@ import com.pragma.bootcamp.model.requestloan.gateways.RequestLoanRepository;
 import com.pragma.bootcamp.model.requeststatus.RequestStatus;
 import com.pragma.bootcamp.model.requeststatus.exception.RequestStatusNotFoundException;
 import com.pragma.bootcamp.model.requeststatus.gateways.RequestStatusRepository;
-
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.math.BigDecimal;
 
 class RequestLoanUseCaseTest {
 

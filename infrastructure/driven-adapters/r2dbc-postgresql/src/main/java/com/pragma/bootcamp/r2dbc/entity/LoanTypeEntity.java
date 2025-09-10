@@ -10,7 +10,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
 
-@Table(name = "TypeLoan")
+@Table(name = "typeloan")
 @AllArgsConstructor()
 @NoArgsConstructor
 @Data

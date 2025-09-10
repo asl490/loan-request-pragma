@@ -18,6 +18,8 @@ public interface RequestLoanMapper {
     @Mapping(target = "requestStatus", source = "requestStatus.id")
     RequestLoanDTO toDTO(RequestLoan requestLoan);
 
+    @Mapping(target = "id" , ignore = true)
+    @Mapping(target = "requestStatus" , ignore = true)
     @Mapping(target = "loanType", source = "loanType", qualifiedByName = "loanTypeFromId")
 //    @Mapping(target = "requestStatus", source = "requestStatus", qualifiedByName = "requestStatusFromId")
     RequestLoan toDomain(RequestLoanCreateDTO requestLoanCreateDTO);

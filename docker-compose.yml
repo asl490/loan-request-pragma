@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  # --- Base de Datos para Autenticación ---
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${AUTH_DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - backend-net
+
+  # --- NUEVA Base de Datos para Préstamos ---
+  mysql-db-2:
+    image: mysql:8.0
+    container_name: mysql-db-2
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${LOAN_DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql-data-2:/var/lib/mysql
+    networks:
+      - backend-net
+
+  # --- Servicio de Cache con Redis ---
+  redis-cache:
+    image: redis:alpine
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - backend-net
+
+  # --- Microservicio de Autenticación ---
+  authentication-service:
+    build:
+      context: ../authentication-pragma
+      dockerfile: deployment/Dockerfile
+    container_name: authentication-service
+    depends_on:
+      - mysql-db
+      - redis-cache
+    ports:
+      - "8080:8080"
+    environment:
+      # --- Activación del perfil de Spring ---
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+
+      # --- Variables para la conexión a la BD (estructura adapters.r2dbc) ---
+      - ADAPTERS_R2DBC_HOST=${DB_HOST}
+      - ADAPTERS_R2DBC_PORT=${DB_PORT}
+      - ADAPTERS_R2DBC_DATABASE=${AUTH_DB_NAME}
+      - ADAPTERS_R2DBC_USERNAME=${DB_USER}
+      - ADAPTERS_R2DBC_PASSWORD=${DB_PASSWORD}
+
+      # --- Configuración de Redis ---
+      - SPRING_REDIS_HOST=${REDIS_HOST}
+      - SPRING_REDIS_PORT=${REDIS_PORT}
+    networks:
+      - backend-net
+
+  # --- Microservicio de Solicitud de Préstamos ---
+  loan-request-service:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile
+    container_name: loan-request-service
+    depends_on:
+      - mysql-db-2
+    ports:
+      - "8081:8081"
+    environment:
+      # --- Activación del perfil de Spring ---
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+
+      # --- Variables para la conexión a la BD (estructura adapters.r2dbc) ---
+      - ADAPTERS_R2DBC_HOST=mysql-db-2
+      - ADAPTERS_R2DBC_PORT=${DB_PORT}
+      - ADAPTERS_R2DBC_DATABASE=${LOAN_DB_NAME}
+      - ADAPTERS_R2DBC_USERNAME=${DB_USER}
+      - ADAPTERS_R2DBC_PASSWORD=${DB_PASSWORD}
+
+      # --- Logging de depuración ---
+      - LOGGING_LEVEL_WEB=DEBUG
+    volumes:
+      - ./logs:/logs
+    networks:
+      - backend-net
+
+# Volúmenes para persistencia de datos
+volumes:
+  mysql-data:
+  mysql-data-2:
+  redis-data:
+
+# Red para la comunicación entre contenedores
+networks:
+  backend-net:
+    driver: bridge

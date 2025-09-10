@@ -217,7 +217,7 @@ public class RequestLoanReactiveRepositoryAdapter extends
         // Asumiendo que el estado aprobado es 2 (ajustar según tu lógica de negocio)
         String sql = """
                 SELECT dni, COALESCE(SUM(amount), 0) as approved_sum 
-                FROM RequestLoan 
+                FROM requestloan 
                 WHERE dni IN (:dnis) AND id_state = :approvedStatus 
                 GROUP BY dni
                 """;
