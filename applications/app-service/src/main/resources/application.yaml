@@ -10,7 +10,7 @@ spring:
       enabled: true
       path: "/h2"
   profiles:
-    active: mysql
+    active: "mysql"
 management:
   endpoints:
     web:
@@ -22,18 +22,23 @@ management:
         enabled: true
 logging:
   level:
-    root: INFO
-    com.pragma.bootcamp: TRACE
+    root: "INFO"
+    com.pragma.bootcamp: "TRACE"
   file:
-    name: logs/backend.log
+    name: "logs/backend.log"
   pattern:
     console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
 cors:
   allowed-origins: "http://localhost:4200,http://localhost:8080"
 app:
-  base-url: ${AUTH_SERVICE_BASE_URL:http://localhost:8080}
+  base-url: "${AUTH_SERVICE_BASE_URL:http://localhost:8080}"
 client:
-  user-path: /api/v1/user/find-document/{dni}
+  user-path: "/api/v1/user/find-document/{dni}"
 jwt:
   secret: "VGhpcyBpcyBhIHZlcnkgc2VjdXJlIHNlY3JldCBmb3Igand0IHNpZ25pbmcgYW5kIGl0IG11c3QgYmUgbG9uZyBlbm91Z2ggdG8gYmUgc2VjdXJl"
   expiration: 3600
+adapter:
+  sqs:
+    region: "sa-east-1"
+    queueUrl: "http://localhost:4566/000000000000/sample"
+    endpoint: "http://localhost:4566 # For localstack only"
