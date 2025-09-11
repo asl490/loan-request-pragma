@@ -10,6 +10,7 @@ import com.pragma.bootcamp.model.loantype.gateways.LoanTypeRepository;
 import com.pragma.bootcamp.model.requestloan.RequestLoan;
 import com.pragma.bootcamp.model.requestloan.RequestLoanInfo;
 import com.pragma.bootcamp.model.requestloan.gateways.RequestLoanRepository;
+import com.pragma.bootcamp.model.requeststatus.Status;
 import com.pragma.bootcamp.model.requeststatus.exception.RequestStatusNotFoundException;
 import com.pragma.bootcamp.model.requeststatus.gateways.RequestStatusRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,13 +32,17 @@ public class RequestLoanUseCase {
                 .flatMap(loanRepository::createLoan);
     }
 
+    public Mono<RequestLoan> getById(Long id) {
+        return loanRepository.findRequestLoanById(id);
+    }
+
     private Mono<RequestLoan> validateAndBuildRequestLoan(RequestLoan requestLoan, String email) {
         return loanTypeRepository.findById(requestLoan.getLoanType().getId())
                 .switchIfEmpty(Mono.error(new LoanTypeNotFoundException("Loan type not found")))
                 .filter(loanType -> loanType.isAmountInRange(requestLoan.getAmount()))
                 .switchIfEmpty(Mono.error(new LoanAmountOutOfRangeException()))
-                .flatMap(loanType -> requestStatusRepository.findByName("PENDING")
-                        .switchIfEmpty(Mono.error(new RequestStatusNotFoundException("PENDING")))
+                .flatMap(loanType -> requestStatusRepository.findByName(Status.PENDING.name())
+                        .switchIfEmpty(Mono.error(new RequestStatusNotFoundException(Status.PENDING.name())))
                         .map(requestStatus -> RequestLoan.builder()
                                 .dni(requestLoan.getDni())
                                 .amount(requestLoan.getAmount())

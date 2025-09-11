@@ -50,7 +50,7 @@ class LoanTypeUseCaseTest {
         StepVerifier.create(loanTypeUseCase.getTypeLoanById(id))
                 .expectErrorMatches(throwable ->
                         throwable instanceof BusinessException &&
-                                throwable.getMessage().equals("loan type not found"))
+                                throwable.getMessage().equals("The requested loan was not found."))
                 .verify();
 
         verify(loanTypeRepository).findById(id);

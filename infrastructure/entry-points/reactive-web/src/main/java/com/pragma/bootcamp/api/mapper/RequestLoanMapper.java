@@ -18,6 +18,10 @@ public interface RequestLoanMapper {
     @Mapping(target = "requestStatus", source = "requestStatus.id")
     RequestLoanDTO toDTO(RequestLoan requestLoan);
 
+    @Mapping(target = "loanType", source = "loanType.id")
+    @Mapping(target = "requestStatus", source = "requestStatus.description")
+    RequestLoanDTO.RequestLoanResponseDTO toResponseTO(RequestLoan requestLoan);
+
     @Mapping(target = "id" , ignore = true)
     @Mapping(target = "requestStatus" , ignore = true)
     @Mapping(target = "loanType", source = "loanType", qualifiedByName = "loanTypeFromId")

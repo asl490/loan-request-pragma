@@ -50,6 +50,22 @@ public class RequestLoanReactiveRepositoryAdapter extends
     }
 
     @Override
+    public Mono<RequestLoan> findRequestLoanById(Long idRequestLoan) {
+        return repository.findById(idRequestLoan).map(requestLoanMapper::toDomain);
+    }
+
+    @Override
+    public Mono<RequestLoan> update(RequestLoan requestLoanRequestLoanUpdate) {
+        return repository.findById(requestLoanRequestLoanUpdate.getId())
+                .flatMap(existingEntity -> {
+                    RequestLoanEntity updatedEntity = requestLoanMapper.toEntity(requestLoanRequestLoanUpdate);
+                    updatedEntity.setId(existingEntity.getId()); // Asegura que el ID se mantenga igual
+                    return repository.save(updatedEntity);
+                })
+                .map(requestLoanMapper::toDomain);
+    }
+
+    @Override
     public Mono<Void> delete(Long idRequestLoan) {
         return repository.deleteById(idRequestLoan);
     }
@@ -164,13 +180,6 @@ public class RequestLoanReactiveRepositoryAdapter extends
                     Query query = Query.query(criteria)
                             .offset((long) pageRequest.getPage() * pageRequest.getSize())
                             .limit(pageRequest.getSize());
-
-//                    // Aplicar ordenamiento
-//                    if (pageRequest.getSortBy() != null) {
-//                        query = "DESC".equalsIgnoreCase(pageRequest.getSortDirection()) ?
-//                                query.sort(org.springframework.data.domain.Sort.by(pageRequest.getSortBy()).descending()) :
-//                                query.sort(org.springframework.data.domain.Sort.by(pageRequest.getSortBy()).ascending());
-//                    }
 
                     // Query para contar total
                     Query countQuery = Query.query(criteria);

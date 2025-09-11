@@ -1,8 +1,11 @@
-package com.pragma.bootcamp.api;
+            package com.pragma.bootcamp.api;
 
 import com.pragma.bootcamp.api.dto.PageRequestDTO;
 import com.pragma.bootcamp.api.dto.RequestLoanCreateDTO;
+import com.pragma.bootcamp.api.dto.UpdateStateDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -16,11 +19,12 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
 import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
+import static org.springframework.web.reactive.function.server.RequestPredicates.PUT;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
 @Configuration
 public class RouterRest {
-    private static final String BASE_PATH = "/api/request-loan";
+    private static final String API_V1_PATH = "/api/v1/solicitud";
 
     @Bean
     @RouterOperations({
@@ -46,6 +50,27 @@ public class RouterRest {
                                             description = "Solicitud de préstamo creada exitosamente"
                                     )
                             }
+                    )
+            ),
+            @RouterOperation(
+                    path = API_V1_PATH + "/{id}/estado",
+                    method = RequestMethod.PUT,
+                    beanClass = Handler.class,
+                    beanMethod = "updateRequestState",
+                    operation = @Operation(
+                            operationId = "updateRequestState",
+                            summary = "Aprobar o Rechazar solicitud",
+                            description = "Permite a un asesor aprobar o rechazar una solicitud de préstamo.",
+                            parameters = {
+                                    @Parameter(name = "id", description = "ID de la solicitud de préstamo", required = true, in = ParameterIn.PATH)
+                            },
+                            requestBody = @RequestBody(
+                                    required = true,
+                                    content = @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            schema = @Schema(implementation = UpdateStateDto.class)
+                                    )
+                            )
                     )
             ),
             @RouterOperation(
@@ -88,17 +113,13 @@ public class RouterRest {
                                             schema = @Schema(implementation = PageRequestDTO.class)
                                     )
                             )
-//                            responses = {
-//                                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-//                                            responseCode = "200",
-//                                            description = "Búsqueda realizada exitosamente"
-//                                    )
-//                            }
+
                     )
             )
     })
     public RouterFunction<ServerResponse> routeRequestLoan(Handler handler) {
-        return route(POST(BASE_PATH), handler::createRequestLoan)
+        return route(POST(API_V1_PATH), handler::createRequestLoan)
+                .andRoute(PUT(API_V1_PATH + "/{id}/estado"), handler::updateRequestState)
                 .andRoute(POST("/api/v1/request-loans/search"), handler::searchWithFilters)
                 .andRoute(POST("/api/v1/request-loans/search-info"), handler::searchWithFiltersInfo);
     }

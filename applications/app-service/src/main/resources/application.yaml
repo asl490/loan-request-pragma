@@ -40,5 +40,5 @@ jwt:
 adapter:
   sqs:
     region: "sa-east-1"
-    queueUrl: "http://localhost:4566/000000000000/sample"
-    endpoint: "http://localhost:4566 # For localstack only"
+    queueUrl: "https://sqs.sa-east-1.amazonaws.com/265385633596/loan-notification"
+#    endpoint: "http://localhost:4566 # For localstack only"

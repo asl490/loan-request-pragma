@@ -7,6 +7,7 @@ import com.pragma.bootcamp.common.PageResponse;
 import com.pragma.bootcamp.exception.ForbiddenException;
 import com.pragma.bootcamp.model.requestloan.RequestLoan;
 import com.pragma.bootcamp.usecase.requestloan.RequestLoanUseCase;
+import com.pragma.bootcamp.usecase.requestloan.UpdateStateRequestLoanUseCase;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
@@ -31,10 +32,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class Handler {
     private final RequestLoanUseCase requestLoanUseCase;
+    private final UpdateStateRequestLoanUseCase updateStateRequestLoanUseCase;
     private final Validator validator;
     private final RequestLoanMapper requestLoanMapper;
 
-    @PreAuthorize("hasRole('CLIENTE')")
+//    @PreAuthorize("hasRole('CLIENTE')")
     public Mono<ServerResponse> createRequestLoan(ServerRequest serverRequest) {
         log.trace("Received request to save a new loan.");
 
@@ -58,7 +60,23 @@ public class Handler {
 
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ASESOR')")
+//    @PreAuthorize("hasRole('ASESOR')")
+    public Mono<ServerResponse> updateRequestState(ServerRequest serverRequest) {
+        log.trace("Received request to update a loan state.");
+        Long id = Long.valueOf(serverRequest.pathVariable("id"));
+
+        return serverRequest.bodyToMono(UpdateStateDto.class)
+                .doOnNext(dto -> log.trace("Request body for state update: {}", dto))
+                .flatMap(dto -> updateStateRequestLoanUseCase.updateState(id, dto.getState()))
+                .map(requestLoanMapper::toResponseTO)
+                .flatMap(updatedRequest ->
+                        ServerResponse.ok()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(updatedRequest)
+                );
+    }
+
+//    @PreAuthorize("hasAnyRole('ADMIN', 'ASESOR')")
     public Mono<ServerResponse> searchWithFilters(ServerRequest serverRequest) {
         log.trace("Received request to search loans with filters.");
         return serverRequest
@@ -76,7 +94,7 @@ public class Handler {
                 ;
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'ASESOR')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'ASESOR')")
     public Mono<ServerResponse> searchWithFiltersInfo(ServerRequest serverRequest) {
         log.trace("Received request to search loans with filters.");
         return serverRequest
@@ -158,3 +176,4 @@ public class Handler {
     }
 
 }
+

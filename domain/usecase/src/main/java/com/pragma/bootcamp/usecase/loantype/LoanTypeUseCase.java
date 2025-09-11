@@ -13,6 +13,6 @@ public class LoanTypeUseCase {
 
     public Mono<LoanType> getTypeLoanById(Long id) {
         return loanTypeRepository.findById(id)
-                .switchIfEmpty(Mono.error(new BusinessException("loan type not found")));
+                .switchIfEmpty(Mono.error(new BusinessException(BusinessException.Type.REQUEST_LOAN_NOT_FOUND)));
     }
 }

@@ -19,4 +19,20 @@ public class RequestLoanDTO {
     private Long requestStatus;
     private Long loanType;
 
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @ToString
+    @Builder(toBuilder = true)
+    public static class RequestLoanResponseDTO {
+        private Long id;
+        private BigDecimal amount;
+        private String email;
+        private String dni;
+        private Integer term;
+        private String requestStatus;
+        private String loanType;
+    }
+
 }
