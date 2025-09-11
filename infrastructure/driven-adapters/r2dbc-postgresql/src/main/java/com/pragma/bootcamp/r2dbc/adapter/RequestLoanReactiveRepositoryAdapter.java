@@ -56,13 +56,15 @@ public class RequestLoanReactiveRepositoryAdapter extends
 
     @Override
     public Mono<RequestLoan> update(RequestLoan requestLoanRequestLoanUpdate) {
-        return repository.findById(requestLoanRequestLoanUpdate.getId())
+        return transactionalGateway.doInTransaction(
+            repository.findById(requestLoanRequestLoanUpdate.getId())
                 .flatMap(existingEntity -> {
                     RequestLoanEntity updatedEntity = requestLoanMapper.toEntity(requestLoanRequestLoanUpdate);
-                    updatedEntity.setId(existingEntity.getId()); // Asegura que el ID se mantenga igual
+                    updatedEntity.setId(existingEntity.getId());
                     return repository.save(updatedEntity);
                 })
-                .map(requestLoanMapper::toDomain);
+                .map(requestLoanMapper::toDomain)
+        );
     }
 
     @Override
