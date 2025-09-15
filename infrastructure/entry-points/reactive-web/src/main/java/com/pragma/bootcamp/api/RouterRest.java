@@ -20,6 +20,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 
 import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
 import static org.springframework.web.reactive.function.server.RequestPredicates.PUT;
+import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
 @Configuration
@@ -115,12 +116,28 @@ public class RouterRest {
                             )
 
                     )
+            ),
+            @RouterOperation(
+                    path = "/api/v1/search/{dni}",
+                    method = RequestMethod.GET,
+                    beanClass = Handler.class,
+                    beanMethod = "searchWithFilters",
+                    operation = @Operation(
+                            operationId = "searchRequestLoans",
+                            summary = "Buscar solicitudes de préstamo con filtros",
+                            description = "Permite buscar solicitudes de préstamo utilizando filtros.",
+                            parameters = {
+                                    @Parameter(name = "dni", description = "dni de la solicitud de préstamo", required = true, in = ParameterIn.PATH)
+                            }
+
+                    )
             )
     })
     public RouterFunction<ServerResponse> routeRequestLoan(Handler handler) {
-        return route(POST(API_V1_PATH), handler::createRequestLoan)
+        return route(POST("/api/request-loan"), handler::createRequestLoan)
                 .andRoute(PUT(API_V1_PATH + "/{id}/estado"), handler::updateRequestState)
                 .andRoute(POST("/api/v1/request-loans/search"), handler::searchWithFilters)
+                .andRoute(GET("/api/v1/search/{dni}"),handler::findApprovedLoans)
                 .andRoute(POST("/api/v1/request-loans/search-info"), handler::searchWithFiltersInfo);
     }
 }

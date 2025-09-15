@@ -5,7 +5,9 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 
 import com.pragma.bootcamp.r2dbc.entity.RequestLoanEntity;
 
+import reactor.core.publisher.Flux;
+
 public interface RequestLoanReactiveRepository
         extends ReactiveCrudRepository<RequestLoanEntity, Long>, ReactiveQueryByExampleExecutor<RequestLoanEntity> {
-    // Mono<RequestLoanEntity> findByName(String name);
+    Flux<RequestLoanEntity> findByDniAndRequestStatus(String dni, Long requestStatus);
 }

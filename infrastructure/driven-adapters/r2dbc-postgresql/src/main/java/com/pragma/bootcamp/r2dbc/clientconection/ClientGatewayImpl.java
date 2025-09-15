@@ -23,4 +23,13 @@ public class ClientGatewayImpl implements ClientRepository {
                 .bodyToMono(Client.class)
                 .map(Client::getEmail);
     }
+
+    @Override
+    public Mono<Client> getClientByDni(String dni) {
+        return clientWebClient
+                .get()
+                .uri(clientProperties.getUserPath(),dni)
+                .retrieve()
+                .bodyToMono(Client.class);
+    }
 }

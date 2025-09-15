@@ -21,6 +21,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -111,6 +112,23 @@ public class Handler {
                 )
                 ;
     }
+    public Mono<ServerResponse> findApprovedLoans(ServerRequest serverRequest) {
+        String dni = (serverRequest.pathVariable("dni"));
+
+        return ServerResponse.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(requestLoanUseCase.findApproveLoansByDni(dni).map(requestLoanMapper::toDTO), RequestLoanDTO.class);
+//        return requestLoanUseCase.findApproveLoansByDni(dni)
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .body(userUseCase.getAll().map(userRestMapper::toUserDTO),
+//                        UserDTO.class);
+    }
+
+//    private Flux<RequestLoanDTO> findApprovedLoans(ServerRequest serverRequest) {
+//
+//            return serverRequest.requestLoanUseCase.findApproveLoansByDni(dnis).map(requestLoanMapper::toDTO);
+//
+//    }
 
     private PageRequest toPageRequestDomain(PageRequestDTO dto) {
         return PageRequest.builder()

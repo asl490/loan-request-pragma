@@ -78,7 +78,7 @@ public class RequestLoanReactiveRepositoryAdapter extends
         RequestLoanEntity requestLoanEntity = requestLoanMapper.toEntity(requestLoan);
 
         return transactionalGateway.doInTransaction(repository.save(requestLoanEntity)
-                .doOnNext(savedEntity -> log.info("Entity after save: {}", savedEntity)) // verifica el ID aquí
+                .doOnNext(savedEntity -> log.info("Entity after save: {}", savedEntity))
                 .map(requestLoanMapper::toDomain)
                 .doOnSuccess(savedRequestLoan -> log.info("Successfully created RequestLoan with ID: {}",
                         savedRequestLoan.getId())));
@@ -218,6 +218,12 @@ public class RequestLoanReactiveRepositoryAdapter extends
                                         .build();
                             });
                 });
+    }
+
+    @Override
+    public Flux<RequestLoan> findApprovedLoansByDni(String dni) {
+        return repository.findByDniAndRequestStatus(dni,APPROVED_STATUS)
+                .map(requestLoanMapper::toDomain);
     }
 
     private Mono<Map<String, BigDecimal>> getApprovedLoansSumByDnis(Set<String> dnis) {

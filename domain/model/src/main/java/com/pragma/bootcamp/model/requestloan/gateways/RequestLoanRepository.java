@@ -22,4 +22,6 @@ public interface RequestLoanRepository {
     Mono<PageResponse<RequestLoan>> findWithFilters(PageRequest pageRequest);
 
     Mono<PageResponse<RequestLoanInfo>> findWithFiltersInfo(PageRequest pageRequest);
+
+    Flux<RequestLoan> findApprovedLoansByDni(String dni);
 }

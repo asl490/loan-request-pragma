@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
@@ -35,7 +36,7 @@ enum ErrorStrategy {
             List<String> errors = bindEx.getBindingResult().getFieldErrors().stream()
                     .map(fe -> String.format("%s: %s", fe.getField(),
                             Optional.ofNullable(fe.getDefaultMessage()).orElse("Error de validación")))
-                    .collect(Collectors.toList());
+                    .toList();
 
             ErrorResponse errorResponse = buildErrorResponse(HttpStatus.BAD_REQUEST.name(), ex.getMessage(), errors,
                     exchange.getRequest().getPath().value());
@@ -102,7 +103,7 @@ enum ErrorStrategy {
             ConstraintViolationException cvEx = (ConstraintViolationException) ex;
             List<String> errors = cvEx.getConstraintViolations().stream()
                     .map(violation -> String.format("%s: %s", violation.getPropertyPath(), violation.getMessage()))
-                    .collect(Collectors.toList());
+                    .toList();
 
             ErrorResponse errorResponse = buildErrorResponse(HttpStatus.BAD_REQUEST.name(), ex.getMessage(), errors,
                     exchange.getRequest().getPath().value());
@@ -164,6 +165,28 @@ enum ErrorStrategy {
             }
         }
     },
+
+    BAD_REQUEST_NOTIFICATION(BusinessException.class) {
+        @Override
+        public Mono<Void> handle(ServerWebExchange exchange, Throwable ex, ObjectMapper objectMapper,
+                                 MessageSource messageSource) {
+            ErrorResponse errorResponse = buildErrorResponse(HttpStatus.BAD_REQUEST.name(), ex.getMessage(), null,
+                    exchange.getRequest().getPath().value());
+            log.warn(errorResponse.getMessage(), ex.getMessage());
+            return writeResponse(exchange, HttpStatus.FORBIDDEN, errorResponse, objectMapper);
+        }
+    },
+    BAD_REQUEST_NOTIFICATION_AWS(ServerWebInputException.class) {
+        @Override
+        public Mono<Void> handle(ServerWebExchange exchange, Throwable ex, ObjectMapper objectMapper,
+                                 MessageSource messageSource) {
+            ErrorResponse errorResponse = buildErrorResponse(HttpStatus.BAD_REQUEST.name(), BusinessException.Type.REQUEST_LOAN_NOT_FOUND.getMessage(), null,
+                    exchange.getRequest().getPath().value());
+            log.warn(errorResponse.getMessage(), ex.getMessage());
+            return writeResponse(exchange, HttpStatus.FORBIDDEN, errorResponse, objectMapper);
+        }
+    },
+
 
     DEFAULT(Throwable.class) {
         @Override

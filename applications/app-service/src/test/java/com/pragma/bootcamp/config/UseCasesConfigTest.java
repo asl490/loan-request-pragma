@@ -2,6 +2,7 @@ package com.pragma.bootcamp.config;
 
 import com.pragma.bootcamp.model.client.gateways.ClientRepository;
 import com.pragma.bootcamp.model.loantype.gateways.LoanTypeRepository;
+import com.pragma.bootcamp.model.requestloan.gateways.LoanEvaluationGateway;
 import com.pragma.bootcamp.model.requestloan.gateways.NotificationGateway;
 import com.pragma.bootcamp.model.requestloan.gateways.RequestLoanRepository;
 import com.pragma.bootcamp.model.requeststatus.gateways.RequestStatusRepository;
@@ -52,6 +53,9 @@ public class UseCasesConfigTest {
         @Bean
         public NotificationGateway notificationGateway() {
             return mock(NotificationGateway.class);
+        }@Bean
+        public LoanEvaluationGateway loanEvaluationGateway() {
+            return mock(LoanEvaluationGateway.class);
         }
 
         @Bean
