@@ -52,7 +52,9 @@ public class RequestLoanUseCase {
 
                     savedLoan.setLoanType(builtLoan.getLoanType());
 
-                    buildAndSendMessage(savedLoan, client).subscribe();
+                    if (Boolean.TRUE.equals(builtLoan.getLoanType().getValidationAutomatic())) {
+                        buildAndSendMessage(savedLoan, client).subscribe();
+                    }
                 })
                 .map(Tuple2::getT2);
     }
