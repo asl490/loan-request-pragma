@@ -51,7 +51,7 @@ public class WebSecurityConfig {
                 .securityContextRepository(securityContextRepository)
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers(SWAGGER_PATHS).permitAll()
-                        .pathMatchers("/api/v1/**").permitAll()
+                        .pathMatchers("/api/v1/**").authenticated()
                         .anyExchange().authenticated())
                 .build();
     }

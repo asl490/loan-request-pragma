@@ -1,3 +1,14 @@
+# Etapa 1: Build
+FROM gradle:8.4-jdk21-alpine AS build
+WORKDIR /app
+
+# Copia el código fuente y archivos de configuración
+COPY --chown=gradle:gradle ../applications/app-service /app
+
+# Compilar el JAR (usa Gradle wrapper si está disponible)
+RUN gradle build --no-daemon
+
+# Etapa 2: Runtime
 FROM eclipse-temurin:21-jdk-alpine
 VOLUME /tmp
 

@@ -21,6 +21,7 @@ import com.pragma.bootcamp.model.requeststatus.gateways.RequestStatusRepository;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuple2;
 
 import java.util.List;
@@ -45,6 +46,7 @@ public class RequestLoanUseCase {
                             Mono.zip(Mono.just(builtLoan), loanRepository.createLoan(builtLoan), Mono.just(client))
                     );
                 })
+
                 .doOnSuccess(tuple -> {
                     RequestLoan builtLoan = tuple.getT1();
                     RequestLoan savedLoan = tuple.getT2();

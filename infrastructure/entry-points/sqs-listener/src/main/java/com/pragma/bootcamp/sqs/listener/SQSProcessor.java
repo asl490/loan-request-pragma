@@ -1,7 +1,7 @@
 package com.pragma.bootcamp.sqs.listener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pragma.bootcamp.model.LoanApproved;
+import com.pragma.bootcamp.model.message.LoanApproved;
 import com.pragma.bootcamp.model.requeststatus.Status;
 import com.pragma.bootcamp.usecase.requestloan.UpdateStateRequestLoanUseCase;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.pragma.bootcamp.model;
+package com.pragma.bootcamp.model.message;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

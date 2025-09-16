@@ -37,7 +37,7 @@ public class Handler {
     private final Validator validator;
     private final RequestLoanMapper requestLoanMapper;
 
-//    @PreAuthorize("hasRole('CLIENTE')")
+    @PreAuthorize("hasRole('CLIENTE')")
     public Mono<ServerResponse> createRequestLoan(ServerRequest serverRequest) {
         log.trace("Received request to save a new loan.");
 
@@ -61,7 +61,7 @@ public class Handler {
 
     }
 
-//    @PreAuthorize("hasRole('ASESOR')")
+    @PreAuthorize("hasRole('ASESOR')")
     public Mono<ServerResponse> updateRequestState(ServerRequest serverRequest) {
         log.trace("Received request to update a loan state.");
         Long id = Long.valueOf(serverRequest.pathVariable("id"));
@@ -77,7 +77,7 @@ public class Handler {
                 );
     }
 
-//    @PreAuthorize("hasAnyRole('ADMIN', 'ASESOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ASESOR')")
     public Mono<ServerResponse> searchWithFilters(ServerRequest serverRequest) {
         log.trace("Received request to search loans with filters.");
         return serverRequest
@@ -95,7 +95,7 @@ public class Handler {
                 ;
     }
 
-//    @PreAuthorize("hasAnyRole('ADMIN', 'ASESOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ASESOR')")
     public Mono<ServerResponse> searchWithFiltersInfo(ServerRequest serverRequest) {
         log.trace("Received request to search loans with filters.");
         return serverRequest
