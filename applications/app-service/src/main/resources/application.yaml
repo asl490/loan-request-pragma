@@ -42,6 +42,7 @@ adapter:
     region: "sa-east-1"
     queueUrlNotification: "https://sqs.sa-east-1.amazonaws.com/265385633596/loan-notification"
     queueUrlDebtCapacity: "https://sqs.sa-east-1.amazonaws.com/265385633596/debt-capacity"
+    queueUrlLoanApproved: "https://sqs.sa-east-1.amazonaws.com/265385633596/loan-approved"
 entrypoint:
   sqs:
     region: "sa-east-1"

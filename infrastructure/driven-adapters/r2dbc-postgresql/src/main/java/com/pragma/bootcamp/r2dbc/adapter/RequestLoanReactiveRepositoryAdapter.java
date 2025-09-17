@@ -226,6 +226,26 @@ public class RequestLoanReactiveRepositoryAdapter extends
                 .map(requestLoanMapper::toDomain);
     }
 
+    @Override
+    public Mono<Long> countAllApprovedLoans() {
+        return repository.countByRequestStatus(APPROVED_STATUS);
+    }
+
+    @Override
+    public Mono<BigDecimal> sumAllApprovedLoans() {
+        String sql = """
+            SELECT COALESCE(SUM(amount), 0) AS approved_sum 
+            FROM requestloan 
+            WHERE id_state = :approvedStatus
+            """;
+
+        return template.getDatabaseClient()
+                .sql(sql)
+                .bind("approvedStatus", APPROVED_STATUS)
+                .map(row -> row.get("approved_sum", BigDecimal.class))
+                .one();
+    }
+
     private Mono<Map<String, BigDecimal>> getApprovedLoansSumByDnis(Set<String> dnis) {
         if (dnis.isEmpty()) {
             return Mono.just(new HashMap<>());

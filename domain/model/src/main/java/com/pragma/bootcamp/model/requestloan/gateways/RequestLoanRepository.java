@@ -7,6 +7,8 @@ import com.pragma.bootcamp.model.requestloan.RequestLoanInfo;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
+
 public interface RequestLoanRepository {
 
     Flux<RequestLoan> getAll();
@@ -24,4 +26,8 @@ public interface RequestLoanRepository {
     Mono<PageResponse<RequestLoanInfo>> findWithFiltersInfo(PageRequest pageRequest);
 
     Flux<RequestLoan> findApprovedLoansByDni(String dni);
+
+    Mono<Long> countAllApprovedLoans();
+
+    Mono<BigDecimal> sumAllApprovedLoans();
 }

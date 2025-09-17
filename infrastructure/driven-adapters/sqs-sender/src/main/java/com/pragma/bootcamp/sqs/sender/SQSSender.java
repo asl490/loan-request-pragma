@@ -1,6 +1,8 @@
 package com.pragma.bootcamp.sqs.sender;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pragma.bootcamp.model.events.LoanApprovedEvent;
+import com.pragma.bootcamp.model.events.gateways.LoanApprovedEventGateway;
 import com.pragma.bootcamp.model.message.LoanEvaluationMessage;
 import com.pragma.bootcamp.model.requestloan.RequestLoan;
 import com.pragma.bootcamp.model.requestloan.gateways.LoanEvaluationGateway;
@@ -17,7 +19,7 @@ import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 @Service
 @Log4j2
 @RequiredArgsConstructor
-public class SQSSender implements NotificationGateway, LoanEvaluationGateway {
+public class SQSSender implements NotificationGateway, LoanEvaluationGateway, LoanApprovedEventGateway {
     private final SQSSenderProperties properties;
     private final SqsAsyncClient client;
     private final ObjectMapper objectMapper;
@@ -46,6 +48,23 @@ public class SQSSender implements NotificationGateway, LoanEvaluationGateway {
                     log.info("Enviando mensaje a SQS para validacion: {}", messageBody);
                     SendMessageRequest sendMsgRequest = SendMessageRequest.builder()
                             .queueUrl(properties.queueUrlDebtCapacity())
+                            .messageBody(messageBody)
+                            .build();
+
+                    return Mono.fromFuture(client.sendMessage(sendMsgRequest));
+                })
+                .doOnSuccess(response -> log.info("Mensaje enviado a SQS con éxito. MessageId: {}", response.messageId()))
+                .doOnError(e -> log.error("Error al enviar mensaje a SQS", e))
+                .then();
+    }
+
+    @Override
+    public Mono<Void> sendLoanApprovedEvent(LoanApprovedEvent event) {
+        return Mono.fromCallable(() -> objectMapper.writeValueAsString(event))
+                .flatMap(messageBody -> {
+                    log.info("Enviando mensaje a SQS para validacion: {}", messageBody);
+                    SendMessageRequest sendMsgRequest = SendMessageRequest.builder()
+                            .queueUrl(properties.queueUrlLoanApproved())
                             .messageBody(messageBody)
                             .build();
 
