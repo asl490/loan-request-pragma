@@ -1,14 +1,8 @@
 adapters:
   r2dbc:
-    host: "localhost"
-    port: 3308
-    database: "loan_db"
-    username: "user"
-    password: "password"
+    host: ${ADAPTERS_R2DBC_HOST:localhost}
+    port: ${ADAPTERS_R2DBC_PORT:3308}
+    database: ${ADAPTERS_R2DBC_DATABASE:loan_db}
+    username: ${ADAPTERS_R2DBC_USERNAME:user}
+    password: ${ADAPTERS_R2DBC_PASSWORD:password}
 
-#      host: ${ADAPTERS_R2DBC_HOST}
-#    port: ${ADAPTERS_R2DBC_PORT}
-#    database: ${ADAPTERS_R2DBC_DATABASE}
-#    username: ${ADAPTERS_R2DBC_USERNAME}
-#    password: ${ADAPTERS_R2DBC_PASSWORD}# for local dev
-#    password: "xyz" # for docker

@@ -1,6 +1,7 @@
 package com.pragma.bootcamp.config;
 
 import com.pragma.bootcamp.model.client.gateways.ClientRepository;
+import com.pragma.bootcamp.model.events.gateways.LoanApprovedEventGateway;
 import com.pragma.bootcamp.model.loantype.gateways.LoanTypeRepository;
 import com.pragma.bootcamp.model.requestloan.gateways.LoanEvaluationGateway;
 import com.pragma.bootcamp.model.requestloan.gateways.NotificationGateway;
@@ -8,9 +9,13 @@ import com.pragma.bootcamp.model.requestloan.gateways.RequestLoanRepository;
 import com.pragma.bootcamp.model.requeststatus.gateways.RequestStatusRepository;
 import com.pragma.bootcamp.utils.gateways.TransactionalGateway;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 public class UseCasesConfigTest {
 
@@ -53,9 +58,16 @@ public class UseCasesConfigTest {
         @Bean
         public NotificationGateway notificationGateway() {
             return mock(NotificationGateway.class);
-        }@Bean
+        }
+
+        @Bean
         public LoanEvaluationGateway loanEvaluationGateway() {
             return mock(LoanEvaluationGateway.class);
+        }
+
+        @Bean
+        public LoanApprovedEventGateway loanApprovedEventGateway() {
+            return mock(LoanApprovedEventGateway.class);
         }
 
         @Bean

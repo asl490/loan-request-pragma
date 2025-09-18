@@ -34,7 +34,7 @@ public class RequestLoanReactiveRepositoryAdapter extends
     private final RequestLoanEntityMapper requestLoanMapper;
     private final TransactionalGateway transactionalGateway;
     private final R2dbcEntityTemplate template;
-    private final Long APPROVED_STATUS = 2L;
+    private final Long APPROVED_STATUS = 3L;
 
     public RequestLoanReactiveRepositoryAdapter(RequestLoanReactiveRepository repository, ObjectMapper mapper,
                                                 RequestLoanEntityMapper requestLoanMapper, TransactionalGateway transactionalGateway, R2dbcEntityTemplate template) {
@@ -57,13 +57,13 @@ public class RequestLoanReactiveRepositoryAdapter extends
     @Override
     public Mono<RequestLoan> update(RequestLoan requestLoanRequestLoanUpdate) {
         return transactionalGateway.doInTransaction(
-            repository.findById(requestLoanRequestLoanUpdate.getId())
-                .flatMap(existingEntity -> {
-                    RequestLoanEntity updatedEntity = requestLoanMapper.toEntity(requestLoanRequestLoanUpdate);
-                    updatedEntity.setId(existingEntity.getId());
-                    return repository.save(updatedEntity);
-                })
-                .map(requestLoanMapper::toDomain)
+                repository.findById(requestLoanRequestLoanUpdate.getId())
+                        .flatMap(existingEntity -> {
+                            RequestLoanEntity updatedEntity = requestLoanMapper.toEntity(requestLoanRequestLoanUpdate);
+                            updatedEntity.setId(existingEntity.getId());
+                            return repository.save(updatedEntity);
+                        })
+                        .map(requestLoanMapper::toDomain)
         );
     }
 
@@ -222,7 +222,7 @@ public class RequestLoanReactiveRepositoryAdapter extends
 
     @Override
     public Flux<RequestLoan> findApprovedLoansByDni(String dni) {
-        return repository.findByDniAndRequestStatus(dni,APPROVED_STATUS)
+        return repository.findByDniAndRequestStatus(dni, APPROVED_STATUS)
                 .map(requestLoanMapper::toDomain);
     }
 
@@ -234,10 +234,10 @@ public class RequestLoanReactiveRepositoryAdapter extends
     @Override
     public Mono<BigDecimal> sumAllApprovedLoans() {
         String sql = """
-            SELECT COALESCE(SUM(amount), 0) AS approved_sum 
-            FROM requestloan 
-            WHERE id_state = :approvedStatus
-            """;
+                SELECT COALESCE(SUM(amount), 0) AS approved_sum 
+                FROM requestloan 
+                WHERE id_state = :approvedStatus
+                """;
 
         return template.getDatabaseClient()
                 .sql(sql)

@@ -24,7 +24,9 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -37,7 +39,7 @@ public class Handler {
     private final Validator validator;
     private final RequestLoanMapper requestLoanMapper;
 
-    @PreAuthorize("hasRole('CLIENTE')")
+//    @PreAuthorize("hasRole('CLIENTE')")
     public Mono<ServerResponse> createRequestLoan(ServerRequest serverRequest) {
         log.trace("Received request to save a new loan.");
 
@@ -51,12 +53,12 @@ public class Handler {
                             .doOnNext(this::validate)
                             .map(requestLoanMapper::toDomain)
                             .flatMap(requestLoanUseCase::createRequestLoan)
-                            .map(requestLoanMapper::toDTO)
                             .flatMap(createdRequest ->
-                                    ServerResponse.ok()
+                                    ServerResponse.created(URI.create("/api/v1/loans/" + createdRequest.getId()))
                                             .contentType(MediaType.APPLICATION_JSON)
-                                            .bodyValue(createdRequest)
+                                            .bodyValue(Map.of("message", "Solicitud de préstamo creada exitosamente"))
                             );
+
                 });
 
     }

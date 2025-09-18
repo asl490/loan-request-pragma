@@ -35,18 +35,18 @@ app:
 client:
   user-path: "/api/v1/user/find-document/{dni}"
 jwt:
-  secret: "VGhpcyBpcyBhIHZlcnkgc2VjdXJlIHNlY3JldCBmb3Igand0IHNpZ25pbmcgYW5kIGl0IG11c3QgYmUgbG9uZyBlbm91Z2ggdG8gYmUgc2VjdXJl"
+  secret: "${JWT_SECRET}"
   expiration: 3600
 adapter:
   sqs:
-    region: "sa-east-1"
-    queueUrlNotification: "https://sqs.sa-east-1.amazonaws.com/265385633596/loan-notification"
-    queueUrlDebtCapacity: "https://sqs.sa-east-1.amazonaws.com/265385633596/debt-capacity"
-    queueUrlLoanApproved: "https://sqs.sa-east-1.amazonaws.com/265385633596/loan-approved"
+    region: "${AWS_REGION}"
+    queueUrlNotification: "${QUEUE_URL_NOTIFICATION}"
+    queueUrlDebtCapacity: "${QUEUE_URL_DEBT_CAPACITY}"
+    queueUrlLoanApproved: "${QUEUE_URL_LOAN_APPROVED}"
 entrypoint:
   sqs:
-    region: "sa-east-1"
-    queueUrl: "https://sqs.sa-east-1.amazonaws.com/265385633596/Loan-response"
+    region: "${AWS_REGION}"
+    queueUrl: "${QUEUE_URL_LOAN_APPROVED}"
     waitTimeSeconds: 20
     maxNumberOfMessages: 10
     visibilityTimeoutSeconds: 10
