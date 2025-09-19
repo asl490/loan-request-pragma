@@ -34,7 +34,7 @@ public class RequestLoanReactiveRepositoryAdapter extends
     private final RequestLoanEntityMapper requestLoanMapper;
     private final TransactionalGateway transactionalGateway;
     private final R2dbcEntityTemplate template;
-    private final Long APPROVED_STATUS = 3L;
+    private final Long APPROVED_STATUS = 2L;
 
     public RequestLoanReactiveRepositoryAdapter(RequestLoanReactiveRepository repository, ObjectMapper mapper,
                                                 RequestLoanEntityMapper requestLoanMapper, TransactionalGateway transactionalGateway, R2dbcEntityTemplate template) {

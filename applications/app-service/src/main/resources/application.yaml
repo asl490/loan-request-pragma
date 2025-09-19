@@ -39,14 +39,14 @@ jwt:
   expiration: 3600
 adapter:
   sqs:
-    region: "${AWS_REGION}"
+    region: "sa-east-1"
     queueUrlNotification: "${QUEUE_URL_NOTIFICATION}"
     queueUrlDebtCapacity: "${QUEUE_URL_DEBT_CAPACITY}"
     queueUrlLoanApproved: "${QUEUE_URL_LOAN_APPROVED}"
 entrypoint:
   sqs:
-    region: "${AWS_REGION}"
-    queueUrl: "${QUEUE_URL_LOAN_APPROVED}"
+    region: "sa-east-1"
+    queueUrl: "${QUEUE_URL_LOAN_RESPONSE}"
     waitTimeSeconds: 20
     maxNumberOfMessages: 10
     visibilityTimeoutSeconds: 10
